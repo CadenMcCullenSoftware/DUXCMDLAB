@@ -1,0 +1,6 @@
+{
+  "name": "Custom Agent Builder & Prompt Optimizer",
+  "description": "End-to-end AI agent configuration architect and technical prompt optimization engine with side-by-side verification, constraint audits, and live testing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
