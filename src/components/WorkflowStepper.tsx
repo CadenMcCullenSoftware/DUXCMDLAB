@@ -13,40 +13,14 @@ interface StepDescriptor {
   id: WorkspaceTab;
   num: string;
   label: string;
-  shortHint: string;
 }
 
 const STEPS: StepDescriptor[] = [
-  {
-    id: 'builder',
-    num: '01',
-    label: 'Setup',
-    shortHint: 'Write goals & limits',
-  },
-  {
-    id: 'review',
-    num: '02',
-    label: 'Compare',
-    shortHint: 'Check 4 helper steps',
-  },
-  {
-    id: 'audit',
-    num: '03',
-    label: 'Check',
-    shortHint: 'Check safety & plain words',
-  },
-  {
-    id: 'simulator',
-    num: '04',
-    label: 'Test Live',
-    shortHint: 'Trace SP-01 -> SP-04 turns',
-  },
-  {
-    id: 'swarmex',
-    num: '05',
-    label: 'Final Gates',
-    shortHint: 'Test locks & math gate',
-  },
+  { id: 'builder', num: '01', label: 'Configure Rules' },
+  { id: 'review', num: '02', label: 'Compiled Output' },
+  { id: 'audit', num: '03', label: 'Compliance Audit' },
+  { id: 'simulator', num: '04', label: 'Test Live' },
+  { id: 'swarmex', num: '05', label: 'Final Gates' },
 ];
 
 export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
@@ -78,8 +52,8 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
   };
 
   return (
-    <div className="relative border-b border-neutral-200/80 dark:border-neutral-800/80 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-lg z-30">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5">
+    <div className="relative border-b border-neutral-200/70 dark:border-white/10 bg-white/55 dark:bg-slate-950/55 backdrop-blur-xl z-30">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
         <nav
           aria-label="Workflow Steps"
           className="relative flex items-center justify-between gap-2 overflow-x-auto no-scrollbar"
@@ -93,32 +67,31 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectStep(step.id)}
-                  className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-colors shrink-0 ${
+                  className={`relative group flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-left transition-colors shrink-0 ${
                     isActive
                       ? 'text-neutral-950 dark:text-white'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100'
                   }`}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="workflowStepperActiveBg"
-                      className="absolute inset-0 bg-white dark:bg-neutral-800/90 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-xs -z-10"
+                      className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 rounded-xl border border-neutral-200/90 dark:border-white/15 shadow-sm -z-10"
                       transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                     >
-                      <div className="absolute inset-x-3 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
+                      <div className="absolute inset-x-4 top-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
                     </motion.div>
                   )}
 
-                  {/* Step Index Circle */}
                   <span
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono font-bold tabular-nums shrink-0 transition-colors ${
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold tabular-nums shrink-0 transition-colors ${
                       state === 'completed'
                         ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-neutral-950'
                         : state === 'attention'
                         ? 'bg-amber-500 text-white dark:bg-amber-400 dark:text-neutral-950'
                         : isActive
                         ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-950'
-                        : 'bg-neutral-200/80 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+                        : 'bg-neutral-200/80 text-neutral-700 dark:bg-slate-800 dark:text-neutral-300'
                     }`}
                   >
                     {state === 'completed' ? (
@@ -130,20 +103,15 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
                     )}
                   </span>
 
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold whitespace-nowrap leading-tight">
-                      {step.label}
-                    </div>
-                    <div className="hidden lg:block text-[10px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap leading-tight mt-0.5">
-                      {state === 'attention' ? 'Draft changed · Re-build' : step.shortHint}
-                    </div>
-                  </div>
+                  <span className="text-xs sm:text-sm font-semibold whitespace-nowrap leading-tight">
+                    {step.label}
+                  </span>
                 </button>
 
                 {index < STEPS.length - 1 && (
                   <div
                     aria-hidden="true"
-                    className="hidden sm:block flex-1 min-w-[12px] max-w-[36px] h-[1px] bg-neutral-200 dark:bg-neutral-800"
+                    className="hidden sm:block flex-1 min-w-[12px] max-w-[40px] h-[1px] bg-neutral-300/70 dark:bg-white/10"
                   />
                 )}
               </React.Fragment>

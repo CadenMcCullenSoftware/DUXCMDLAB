@@ -63,26 +63,26 @@ const SUBSTEP_META: Record<
 > = {
   validator: {
     num: '5.1',
-    label: 'Path & Loop Gate (SP-02)',
-    hint: 'Test SP-02 read-only folder rules and no-loop command gates (.config/duxcmd.json).',
+    label: 'Path & Loop Gate',
+    hint: 'Test folder limits and no-loop command rules.',
     icon: ShieldCheck,
   },
   gateway: {
     num: '5.2',
-    label: 'Person Gate (SP-04)',
-    hint: 'Test the SP-04 (y/N) person approval stop for DEPLOY, WRITE_SYS, and EXECUTE.',
+    label: 'Person Gate',
+    hint: 'Test (y/N) approval for DEPLOY, WRITE_SYS, and EXECUTE.',
     icon: Terminal,
   },
   evidence: {
     num: '5.3',
-    label: 'Proof & Math Gate (SP-03)',
-    hint: 'Sort claims into 4 proof levels and give 0% power to stories or wrong math.',
+    label: 'Proof & Math',
+    hint: 'Check proof levels, math equations, and 0%-power story filters.',
     icon: Scale,
   },
   repo: {
     num: '5.4',
     label: 'Starter Files',
-    hint: 'Read the Python and Bash rule files and send limits back to Step 1.',
+    hint: 'View rule files or push limits back to Step 1.',
     icon: FolderTree,
   },
 };
@@ -150,6 +150,7 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
   const [selectedFilePath, setSelectedFilePath] = useState<string>('.config/duxcmd.json');
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const [showComplianceRef, setShowComplianceRef] = useState<boolean>(false);
+  const [showPowerRulesRef, setShowPowerRulesRef] = useState<boolean>(false);
 
   const selectedRepoFile =
     repoFiles.find((f) => f.path === selectedFilePath) || repoFiles[0];
@@ -593,41 +594,38 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
   const prevSubStep = currentIdx > 0 ? SUBSTEP_ORDER[currentIdx - 1] : null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Focused Step Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <div className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
-            Step 5 of 5 · Final Safety Gates · <Lock className="w-3 h-3 inline text-emerald-600" /> {policyConfig.agent.mode}
+        <div className="space-y-1">
+          <div className="text-xs sm:text-sm font-mono text-neutral-500 dark:text-neutral-400">
+            Step 5 of 5 · Final Gates · <Lock className="w-3.5 h-3.5 inline text-emerald-600" /> {policyConfig.agent.mode}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mt-0.5">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 dark:text-white">
             Final Safety &amp; Math Gates
           </h1>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
-            {currentMeta.hint}
-          </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={handlePushToBuilder}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-neutral-400 transition-colors"
+            className="depth-strip inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 rounded-xl hover:border-neutral-400 transition-colors"
           >
-            <span>Send Rules to Step 1</span>
+            <span>Send to Step 1</span>
           </button>
           <button
             type="button"
             onClick={handleDownloadFullBundleScript}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-xl hover:bg-neutral-800 transition-colors"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Download Rule Files</span>
+            <Download className="w-4 h-4" />
+            <span>Download Files</span>
           </button>
         </div>
       </div>
 
-      {/* Step 5 Rule Checks */}
+      {/* Collapsed Step 5 Rule Bar */}
       <StepCompliancePanel
         step="swarmex"
         satisfiedIds={[
@@ -638,7 +636,7 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
       />
 
       {/* 4 Sub-Step Rail */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 rounded-2xl bg-neutral-100/75 dark:bg-neutral-900/75 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md">
+      <div className="depth-strip grid grid-cols-2 md:grid-cols-4 gap-2 p-2 rounded-2xl">
         {SUBSTEP_ORDER.map((id) => {
           const meta = SUBSTEP_META[id];
           const Icon = meta.icon;
@@ -659,27 +657,27 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
               key={id}
               type="button"
               onClick={() => setSubTab(id)}
-              className={`relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors z-10 ${
+              className={`relative flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-left transition-colors z-10 ${
                 isActive
                   ? 'text-neutral-950 dark:text-white'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100'
               }`}
             >
               {isActive && (
                 <motion.div
                   layoutId="swarmexSubStepBg"
-                  className="absolute inset-0 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-xs -z-10"
+                  className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl border border-neutral-200 dark:border-white/15 shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
               <Icon className="w-4 h-4 shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs font-semibold truncate">
+              <div className="min-w-0 flex-1 flex items-center justify-between gap-2">
+                <span className="text-xs sm:text-sm font-bold truncate">
                   {meta.num} {meta.label}
-                </div>
-                <div className="text-[10px] font-mono tabular-nums text-neutral-500 dark:text-neutral-400">
-                  {doneCount > 0 ? `${doneCount} checked` : 'Ready'}
-                </div>
+                </span>
+                <span className="text-xs font-mono tabular-nums text-neutral-500 dark:text-neutral-400 shrink-0">
+                  {doneCount > 0 ? doneCount : '·'}
+                </span>
               </div>
             </button>
           );
@@ -689,9 +687,9 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
       {/* SUB-STEP 5.1: Path & Loop Gate */}
       {subTab === 'validator' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-          <div className="flex flex-col bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden backdrop-blur-xl">
-            <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2">
-              <span className="text-xs font-bold font-mono text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+          <div className="depth-block flex flex-col rounded-3xl overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-neutral-200/80 dark:border-white/10 flex items-center justify-between gap-2">
+              <span className="text-sm font-bold font-mono text-neutral-950 dark:text-white flex items-center gap-2">
                 <FileCode2 className="w-4 h-4 text-neutral-500" />
                 .config/duxcmd.json
               </span>
@@ -731,23 +729,23 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden backdrop-blur-xl">
-            <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-              <span className="text-xs font-bold font-mono text-neutral-900 dark:text-neutral-100">
+          <div className="depth-block flex flex-col rounded-3xl overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-neutral-200/80 dark:border-white/10">
+              <span className="text-sm font-bold font-mono text-neutral-950 dark:text-white">
                 scripts/policy_enforcer.py · Folder &amp; Mode Check
               </span>
             </div>
             <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                    <label className="block text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1.5">
                       Action
                     </label>
                     <select
                       value={actionType}
                       onChange={(e) => setActionType(e.target.value as any)}
-                      className="w-full px-3 py-2 text-xs font-mono bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-100"
+                      className="w-full px-3.5 py-2.5 text-sm font-mono bg-white/80 dark:bg-slate-900/80 border border-neutral-200/80 dark:border-white/10 rounded-xl text-neutral-900 dark:text-neutral-100"
                     >
                       <option value="read">read</option>
                       <option value="write">write</option>
@@ -756,14 +754,14 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
                     </select>
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                    <label className="block text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1.5">
                       Folder or File Path
                     </label>
                     <input
                       type="text"
                       value={targetPath}
                       onChange={(e) => setTargetPath(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-mono bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-100"
+                      className="w-full px-3.5 py-2.5 text-sm font-mono bg-white/80 dark:bg-slate-900/80 border border-neutral-200/80 dark:border-white/10 rounded-xl text-neutral-900 dark:text-neutral-100"
                     />
                   </div>
                 </div>
@@ -772,9 +770,9 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
                   type="button"
                   onClick={() => runPathValidation()}
                   disabled={Boolean(jsonError)}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-xl hover:bg-neutral-800 transition-colors disabled:opacity-50"
                 >
-                  <Play className="w-3.5 h-3.5" />
+                  <Play className="w-4 h-4" />
                   <span>Check Path Rule</span>
                 </button>
 
@@ -830,7 +828,7 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="text-neutral-500">Pick a quick test or type a path to check folder rules.</div>
+                  <div className="text-neutral-500">No path check run.</div>
                 )}
               </div>
 
@@ -918,20 +916,20 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
       {/* SUB-STEP 5.2: Person Approval Gate */}
       {subTab === 'gateway' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-          <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 backdrop-blur-xl space-y-4">
-            <div className="text-xs font-bold font-mono text-neutral-900 dark:text-neutral-100 pb-2 border-b border-neutral-200 dark:border-neutral-800">
-              scripts/execution_gateway.sh · Person Check Prompt
+          <div className="depth-block rounded-3xl p-6 space-y-4">
+            <div className="text-sm font-bold font-mono text-neutral-950 dark:text-white pb-2.5 border-b border-neutral-200/80 dark:border-white/10">
+              scripts/execution_gateway.sh · Person Gate
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1.5">
                   Action
                 </label>
                 <select
                   value={gatewayAction}
                   onChange={(e) => setGatewayAction(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-100"
+                  className="w-full px-3.5 py-2.5 text-sm font-mono bg-white/80 dark:bg-slate-900/80 border border-neutral-200/80 dark:border-white/10 rounded-xl text-neutral-900 dark:text-neutral-100"
                 >
                   <option value="DEPLOY">DEPLOY (Needs y/N)</option>
                   <option value="PROPOSE_PATCH">PROPOSE_PATCH (1 Fix · y/N)</option>
@@ -941,14 +939,14 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
                 </select>
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1.5">
                   Inputs
                 </label>
                 <input
                   type="text"
                   value={gatewayParams}
                   onChange={(e) => setGatewayParams(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-100"
+                  className="w-full px-3.5 py-2.5 text-sm font-mono bg-white/80 dark:bg-slate-900/80 border border-neutral-200/80 dark:border-white/10 rounded-xl text-neutral-900 dark:text-neutral-100"
                 />
               </div>
             </div>
@@ -957,9 +955,9 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
               type="button"
               onClick={() => handleSubmitGateway()}
               disabled={Boolean(pendingGatewayRequest)}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-xl hover:bg-neutral-800 transition-colors disabled:opacity-50"
             >
-              <Terminal className="w-3.5 h-3.5" />
+              <Terminal className="w-4 h-4" />
               <span>Send to Person Gate</span>
             </button>
 
@@ -992,23 +990,23 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
             )}
           </div>
 
-          <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 backdrop-blur-xl flex flex-col space-y-3">
-            <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-2">
-              <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
+          <div className="depth-block rounded-3xl p-6 flex flex-col space-y-3">
+            <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-white/10 pb-2.5">
+              <span className="text-sm font-bold text-neutral-950 dark:text-white">
                 Person Gate History
               </span>
-              <span className="text-[11px] font-mono tabular-nums text-neutral-500">
+              <span className="text-xs font-mono tabular-nums text-neutral-500">
                 {gatewayHistory.length} checks
               </span>
             </div>
             <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[340px]">
               {gatewayHistory.length === 0 ? (
-                <div className="text-center py-10 text-xs text-neutral-500">
-                  Send an action on the left to test the <span className="font-mono">(y/N)</span> person stop prompt.
+                <div className="text-center py-8 text-sm text-neutral-500">
+                  No checks yet.
                 </div>
               ) : (
                 gatewayHistory.map((item) => (
-                  <div key={item.id} className="p-3 rounded-xl bg-neutral-950 text-neutral-200 font-mono text-[11px] space-y-1.5">
+                  <div key={item.id} className="p-3 rounded-xl bg-neutral-950 text-neutral-200 font-mono text-xs space-y-1.5">
                     <div className="flex items-center justify-between">
                       <span className="font-bold">{item.action} · {item.timestamp}</span>
                       <span className={item.outcome === 'APPROVED' ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
@@ -1027,38 +1025,38 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
       {/* SUB-STEP 5.3: 4 Proof Levels & Resource/Math Gate */}
       {subTab === 'evidence' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-          <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 backdrop-blur-xl space-y-4">
-            <div className="text-xs font-bold font-mono text-neutral-900 dark:text-neutral-100 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="depth-block rounded-3xl p-6 space-y-4">
+            <div className="text-sm font-bold font-mono text-neutral-950 dark:text-white pb-2.5 border-b border-neutral-200/80 dark:border-white/10">
               src/agent.py · Proof Level Checker
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+              <label className="block text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1.5">
                 Statement to Check
               </label>
               <input
                 type="text"
                 value={claimText}
                 onChange={(e) => setClaimText(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-100"
+                className="w-full px-3.5 py-2.5 text-sm bg-white/80 dark:bg-slate-900/80 border border-neutral-200/80 dark:border-white/10 rounded-xl text-neutral-900 dark:text-neutral-100"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+              <label className="block text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1.5">
                 File Clues &amp; Test Output (one line each)
               </label>
               <textarea
                 rows={4}
                 value={evidenceText}
                 onChange={(e) => setEvidenceText(e.target.value)}
-                className="w-full px-3 py-2 text-xs font-mono bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-100"
+                className="w-full px-3.5 py-2.5 text-sm font-mono bg-white/80 dark:bg-slate-900/80 border border-neutral-200/80 dark:border-white/10 rounded-xl text-neutral-900 dark:text-neutral-100"
               />
             </div>
             <button
               type="button"
               onClick={() => handleRunClaimClassifier()}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-xl hover:bg-neutral-800 transition-colors"
             >
-              <Scale className="w-3.5 h-3.5" />
+              <Scale className="w-4 h-4" />
               <span>Check Proof Level</span>
             </button>
 
@@ -1094,74 +1092,79 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
             </div>
           </div>
 
-          <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 backdrop-blur-xl space-y-4">
-            <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="depth-block rounded-3xl p-6 space-y-4">
+            <div className="text-sm font-bold text-neutral-950 dark:text-white pb-2.5 border-b border-neutral-200/80 dark:border-white/10">
               Proof Result &amp; 4 Levels
             </div>
 
             {claimOutcome ? (
-              <div className={`p-4 rounded-xl border space-y-1.5 ${getTierStyle(claimOutcome.classification)}`}>
-                <div className="text-xs font-bold font-mono">Level: {formatSimpleTierLabel(claimOutcome.classification)}</div>
-                <div className="text-xs font-semibold">{simplifyAndRedactText(claimOutcome.claim)}</div>
-                <p className="text-xs opacity-90 leading-relaxed">{simplifyAndRedactText(claimOutcome.rationale)}</p>
+              <div className={`p-4 rounded-2xl border space-y-1.5 ${getTierStyle(claimOutcome.classification)}`}>
+                <div className="text-sm font-bold font-mono">{formatSimpleTierLabel(claimOutcome.classification)}</div>
+                <div className="text-sm font-semibold">{simplifyAndRedactText(claimOutcome.claim)}</div>
+                <p className="text-xs sm:text-sm opacity-90 leading-relaxed">{simplifyAndRedactText(claimOutcome.rationale)}</p>
               </div>
             ) : (
-              <div className="p-4 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 text-xs text-neutral-500">
-                Pick a sample or click Check Proof Level to see the simple proof level.
+              <div className="p-4 rounded-2xl border border-dashed border-neutral-300 dark:border-white/15 text-sm text-neutral-500">
+                No proof check run.
               </div>
             )}
 
-            <div className="divide-y divide-neutral-200 dark:divide-neutral-800 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden text-xs">
-              <div className="p-2.5">
+            <div className="divide-y divide-neutral-200/80 dark:divide-white/10 border border-neutral-200/80 dark:border-white/10 rounded-2xl overflow-hidden text-xs sm:text-sm">
+              <div className="p-3">
                 <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">Proven</span>
-                <span className="text-neutral-600 dark:text-neutral-400"> · Real test or command ran and passed.</span>
+                <span className="text-neutral-600 dark:text-neutral-300"> · Real test ran and passed.</span>
               </div>
-              <div className="p-2.5">
+              <div className="p-3">
                 <span className="font-mono font-bold text-indigo-700 dark:text-indigo-400">Clue from Files</span>
-                <span className="text-neutral-600 dark:text-neutral-400"> · Shown in code or files, but not run yet.</span>
+                <span className="text-neutral-600 dark:text-neutral-300"> · Found in files, not yet run.</span>
               </div>
-              <div className="p-2.5">
+              <div className="p-3">
                 <span className="font-mono font-bold text-amber-700 dark:text-amber-400">Unknown</span>
-                <span className="text-neutral-600 dark:text-neutral-400"> · Not enough proof found yet.</span>
+                <span className="text-neutral-600 dark:text-neutral-300"> · Missing proof.</span>
               </div>
-              <div className="p-2.5">
+              <div className="p-3">
                 <span className="font-mono font-bold text-rose-700 dark:text-rose-400">Conflicting</span>
-                <span className="text-neutral-600 dark:text-neutral-400"> · Files disagree or a test failed.</span>
+                <span className="text-neutral-600 dark:text-neutral-300"> · Files disagree or test failed.</span>
               </div>
             </div>
           </div>
 
           {/* Power & Math Gate Panel */}
-          <div className="lg:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
-            <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 backdrop-blur-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-2">
-                <span className="text-xs font-bold font-mono text-neutral-900 dark:text-neutral-100">
-                  cmd:triage_resource · Numbers &amp; Math Gate
+          <div className="lg:col-span-2 space-y-4 pt-2">
+            <div className="depth-block rounded-3xl p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200/80 dark:border-white/10 pb-2.5">
+                <span className="text-sm font-bold font-mono text-neutral-950 dark:text-white">
+                  cmd:triage_resource · Power &amp; Math Gate
                 </span>
-                <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400">
-                  0% Power for Stories &amp; Opinions
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowPowerRulesRef((prev) => !prev)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  <span>{showPowerRulesRef ? 'Hide Rules Table' : 'View Rules Table'}</span>
+                  {showPowerRulesRef ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1.5">
                   Input Text or Numbers
                 </label>
                 <textarea
                   rows={3}
                   value={resourceInput}
                   onChange={(e) => setResourceInput(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-100"
+                  className="w-full px-3.5 py-2.5 text-sm font-mono bg-white/80 dark:bg-slate-900/80 border border-neutral-200/80 dark:border-white/10 rounded-xl text-neutral-900 dark:text-neutral-100"
                 />
               </div>
 
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() =>
                     handleRunResourceTriage('Personal statements about individual behavior.')
                   }
-                  className="px-2.5 py-1 text-[11px] font-mono bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md"
+                  className="px-3 py-1.5 text-xs font-mono bg-neutral-100/90 dark:bg-slate-800/80 hover:bg-neutral-200 dark:hover:bg-slate-700 rounded-lg"
                 >
                   Example A: Personal (Ignored)
                 </button>
@@ -1172,7 +1175,7 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
                       'Escrow account totals: $4,200, mortgage interest rates: 6.25%, tax returns: $95,000. Equation: 2 + 2 = 4.'
                     )
                   }
-                  className="px-2.5 py-1 text-[11px] font-mono bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md"
+                  className="px-3 py-1.5 text-xs font-mono bg-neutral-100/90 dark:bg-slate-800/80 hover:bg-neutral-200 dark:hover:bg-slate-700 rounded-lg"
                 >
                   Example B: Money &amp; 2+2=4 (Run)
                 </button>
@@ -1183,7 +1186,7 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
                       'Escrow account totals: $4,200. Verify equation: 2 + 2 = 5.'
                     )
                   }
-                  className="px-2.5 py-1 text-[11px] font-mono bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md"
+                  className="px-3 py-1.5 text-xs font-mono bg-neutral-100/90 dark:bg-slate-800/80 hover:bg-neutral-200 dark:hover:bg-slate-700 rounded-lg"
                 >
                   Wrong Math (2+2=5)
                 </button>
@@ -1192,9 +1195,9 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
               <button
                 type="button"
                 onClick={() => handleRunResourceTriage()}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-xl hover:bg-neutral-800 transition-colors"
               >
-                <Scale className="w-3.5 h-3.5" />
+                <Scale className="w-4 h-4" />
                 <span>Check Power &amp; Math</span>
               </button>
 
@@ -1245,56 +1248,53 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
               )}
             </div>
 
-            <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 backdrop-blur-xl space-y-4">
-              <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 pb-2 border-b border-neutral-200 dark:border-neutral-800">
-                Power Rules &amp; Simple Standards
-              </div>
-              <div className="overflow-x-auto border border-neutral-200 dark:border-neutral-800 rounded-xl">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 bg-neutral-50/70 dark:bg-neutral-800/40">
-                      <th className="py-2 px-3 font-semibold">Input Type</th>
-                      <th className="py-2 px-3 font-semibold">Status</th>
-                      <th className="py-2 px-3 font-semibold">Reason</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-200/70 dark:divide-neutral-800/70">
-                    {RESOURCE_ALLOCATION_TABLE.map((row) => (
-                      <tr key={row.inputType}>
-                        <td className="py-2 px-3 font-medium text-neutral-900 dark:text-neutral-100">
-                          {row.inputType}
-                        </td>
-                        <td
-                          className={`py-2 px-3 font-mono font-bold ${
-                            row.processingStatus === 'Processed'
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : 'text-rose-600 dark:text-rose-400'
-                          }`}
-                        >
-                          {row.processingStatus}
-                        </td>
-                        <td className="py-2 px-3 text-neutral-600 dark:text-neutral-400">
-                          {simplifyAndRedactText(row.systemReason)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-300">
-                  Simple Rules
+            {showPowerRulesRef && (
+              <div className="depth-block rounded-3xl p-6 space-y-4">
+                <div className="text-sm font-bold text-neutral-950 dark:text-white pb-2 border-b border-neutral-200/80 dark:border-white/10">
+                  Power Rules &amp; Simple Standards
                 </div>
-                <ul className="space-y-1 text-xs text-neutral-600 dark:text-neutral-400">
+                <div className="overflow-x-auto border border-neutral-200/80 dark:border-white/10 rounded-xl">
+                  <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                      <tr className="border-b border-neutral-200/80 dark:border-white/10 text-neutral-500 bg-neutral-50/70 dark:bg-slate-800/40">
+                        <th className="py-2.5 px-3 font-semibold">Input Type</th>
+                        <th className="py-2.5 px-3 font-semibold">Status</th>
+                        <th className="py-2.5 px-3 font-semibold">Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-200/70 dark:divide-white/5">
+                      {RESOURCE_ALLOCATION_TABLE.map((row) => (
+                        <tr key={row.inputType}>
+                          <td className="py-2.5 px-3 font-medium text-neutral-950 dark:text-white">
+                            {row.inputType}
+                          </td>
+                          <td
+                            className={`py-2.5 px-3 font-mono font-bold ${
+                              row.processingStatus === 'Processed'
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-rose-600 dark:text-rose-400'
+                            }`}
+                          >
+                            {row.processingStatus}
+                          </td>
+                          <td className="py-2.5 px-3 text-neutral-600 dark:text-neutral-300">
+                            {simplifyAndRedactText(row.systemReason)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <ul className="space-y-1 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300">
                   {EVALUATION_STANDARDS_LIST.map((std, idx) => (
-                    <li key={idx} className="font-mono text-[11px]">
+                    <li key={idx} className="font-mono text-xs">
                       {idx + 1}. {simplifyAndRedactText(std)}
                     </li>
                   ))}
                 </ul>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -1303,14 +1303,14 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
       {subTab === 'repo' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden backdrop-blur-xl">
-              <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                <span className="text-xs font-bold font-mono text-neutral-900 dark:text-neutral-100">
+            <div className="depth-block rounded-3xl overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-neutral-200/80 dark:border-white/10 flex items-center justify-between">
+                <span className="text-sm font-bold font-mono text-neutral-950 dark:text-white">
                   swarmex-duxcmd-agent/
                 </span>
-                <span className="text-[11px] font-mono tabular-nums text-neutral-500">{repoFiles.length} files</span>
+                <span className="text-xs font-mono tabular-nums text-neutral-500">{repoFiles.length} files</span>
               </div>
-              <div className="divide-y divide-neutral-200/70 dark:divide-neutral-800/70">
+              <div className="divide-y divide-neutral-200/70 dark:divide-white/10">
                 {repoFiles.map((file) => {
                   const active = file.path === selectedRepoFile.path;
                   return (
@@ -1318,10 +1318,10 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
                       key={file.path}
                       type="button"
                       onClick={() => setSelectedFilePath(file.path)}
-                      className={`w-full text-left px-4 py-2 text-xs transition-colors ${
+                      className={`w-full text-left px-5 py-2.5 text-xs sm:text-sm transition-colors ${
                         active
                           ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-950 font-semibold'
-                          : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60'
+                          : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100/70 dark:hover:bg-slate-800/60'
                       }`}
                     >
                       <div className="font-mono truncate">{file.path}</div>
@@ -1331,7 +1331,7 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
               </div>
             </div>
 
-            <div className="lg:col-span-2 bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden backdrop-blur-xl flex flex-col">
+            <div className="lg:col-span-2 depth-block rounded-3xl overflow-hidden flex flex-col">
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2">
                 <span className="text-xs font-bold font-mono text-neutral-900 dark:text-neutral-100 truncate">
                   {selectedRepoFile.path}
@@ -1362,41 +1362,41 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
           </div>
 
           {/* Collapsible Safety Rules Reference */}
-          <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl bg-white/80 dark:bg-neutral-900/80 overflow-hidden">
+          <div className="depth-strip rounded-2xl overflow-hidden">
             <button
               type="button"
               onClick={() => setShowComplianceRef((prev) => !prev)}
-              className="w-full px-5 py-3 flex items-center justify-between text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 transition-colors"
+              className="w-full px-5 py-3.5 flex items-center justify-between text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors"
             >
-              <span>Safety Standards &amp; Guards (NIST SP 800-207 · OWASP · NIST 800-53)</span>
+              <span>Safety Standards &amp; Guards</span>
               {showComplianceRef ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
 
             {showComplianceRef && (
-              <div className="p-5 border-t border-neutral-200 dark:border-neutral-800 space-y-4">
+              <div className="p-5 border-t border-neutral-200/80 dark:border-white/10 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {SWARMEX_FRAMEWORKS.map((fw) => (
-                    <div key={fw.standard} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/70 space-y-1">
-                      <div className="text-[11px] font-mono font-bold text-indigo-600 dark:text-indigo-400">{fw.standard}</div>
-                      <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{fw.title}</div>
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400">{simplifyAndRedactText(fw.detail)}</p>
+                    <div key={fw.standard} className="p-3.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-neutral-200/80 dark:border-white/10 space-y-1">
+                      <div className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">{fw.standard}</div>
+                      <div className="text-sm font-bold text-neutral-950 dark:text-white">{fw.title}</div>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-300">{simplifyAndRedactText(fw.detail)}</p>
                     </div>
                   ))}
                 </div>
-                <table className="w-full text-left border-collapse text-xs">
+                <table className="w-full text-left border-collapse text-xs sm:text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-500">
+                    <tr className="border-b border-neutral-200/80 dark:border-white/10 text-neutral-500">
                       <th className="py-2 pr-4 font-semibold">Safety Guard</th>
                       <th className="py-2 pr-4 font-semibold">Rule</th>
                       <th className="py-2 font-semibold">Where It Runs</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200/70 dark:divide-neutral-800/70">
+                  <tbody className="divide-y divide-neutral-200/70 dark:divide-white/10">
                     {SWARMEX_SAFEGUARDS.map((row) => (
                       <tr key={row.safeguard}>
-                        <td className="py-2 pr-4 font-semibold text-neutral-900 dark:text-neutral-100">{row.safeguard}</td>
-                        <td className="py-2 pr-4 text-neutral-600 dark:text-neutral-400">{simplifyAndRedactText(row.description)}</td>
-                        <td className="py-2 font-mono text-[11px] text-neutral-800 dark:text-neutral-200">{simplifyAndRedactText(row.mechanism)}</td>
+                        <td className="py-2.5 pr-4 font-semibold text-neutral-950 dark:text-white">{row.safeguard}</td>
+                        <td className="py-2.5 pr-4 text-neutral-600 dark:text-neutral-300">{simplifyAndRedactText(row.description)}</td>
+                        <td className="py-2.5 font-mono text-xs text-neutral-800 dark:text-neutral-200">{simplifyAndRedactText(row.mechanism)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1408,15 +1408,15 @@ export const SwarmexWorkbenchView: React.FC<SwarmexWorkbenchViewProps> = ({
       )}
 
       {/* Handoff Bar */}
-      <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl px-6 pb-6">
+      <div className="depth-block rounded-3xl px-6 sm:px-8 pb-6">
         <StepHandoffBar
           stepLabel={`${currentMeta.num} ${currentMeta.label}`}
           completedSummary={
             nextSubStep
-              ? `${metrics.policyChecksRun} SP-02 path checks · ${metrics.gatewayDecisions} SP-04 person checks · ${metrics.claimsClassified} SP-03 math & proof checks.`
+              ? `${metrics.policyChecksRun} path · ${metrics.gatewayDecisions} person · ${metrics.claimsClassified} math checks.`
               : metrics.bundleExported
-              ? 'Rule files saved. You can send updated safety rules back to Step 1 anytime.'
-              : 'Read all 8 rule files above or send these rules back to Step 1.'
+              ? 'Rule files saved.'
+              : 'Read starter files or send rules to Step 1.'
           }
           isStepComplete={
             metrics.policyChecksRun > 0 ||

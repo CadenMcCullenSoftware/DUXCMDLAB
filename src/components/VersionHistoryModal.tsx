@@ -26,26 +26,21 @@ export const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="depth-block rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-neutral-800 dark:text-neutral-200">
-              <History className="w-4 h-4" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200/80 dark:border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-neutral-100 dark:bg-slate-800 rounded-xl text-neutral-800 dark:text-neutral-100">
+              <History className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
-                Saved Draft History
-              </h2>
-              <p className="text-xs text-neutral-500">
-                Saves a copy each time you build rules so you can go back anytime.
-              </p>
-            </div>
+            <h2 className="text-lg font-bold text-neutral-950 dark:text-white">
+              Saved Drafts
+            </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg transition-colors"
+            className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-xl transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -54,8 +49,8 @@ export const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
         {/* Snapshots List */}
         <div className="flex-1 p-6 overflow-y-auto space-y-3">
           {snapshots.length === 0 ? (
-            <div className="text-center py-12 text-xs text-neutral-500">
-              No saved copies yet. Copies are saved every time you click Build Rules.
+            <div className="text-center py-12 text-sm text-neutral-500">
+              No saved drafts yet.
             </div>
           ) : (
             snapshots.map((snap) => {

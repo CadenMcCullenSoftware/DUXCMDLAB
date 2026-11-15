@@ -3,8 +3,8 @@ import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
 
 interface FieldWithGuidanceProps {
   label: string;
-  hint: string;
-  whyItMatters: string;
+  hint?: string;
+  whyItMatters?: string;
   exampleText: string;
   value: string;
   onChange: (value: string) => void;
@@ -27,55 +27,56 @@ export const FieldWithGuidance: React.FC<FieldWithGuidanceProps> = ({
   const trimmed = value.trim();
   const wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
 
-  // Lightweight detail-depth indicator so users immediately know expected granularity
   const readiness =
     wordCount === 0
       ? { label: 'Empty', tone: 'text-neutral-400 dark:text-neutral-500' }
       : wordCount < 7
       ? { label: 'Short', tone: 'text-amber-600 dark:text-amber-400' }
-      : { label: 'Good detail', tone: 'text-emerald-600 dark:text-emerald-400' };
+      : { label: 'Ready', tone: 'text-emerald-600 dark:text-emerald-400' };
 
   return (
-    <div className="space-y-1.5">
-      {/* Top Row: Clear Label + Depth Readiness + Expandable Why & Example Toggle */}
-      <div className="flex items-center justify-between gap-3">
-        <label className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
-          {label}
-        </label>
+    <div className="space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-0.5 min-w-0">
+          <label className="block text-sm sm:text-base font-bold tracking-tight text-neutral-950 dark:text-white">
+            {label}
+          </label>
+          {hint && (
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-snug">
+              {hint}
+            </p>
+          )}
+        </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <span className={`text-[11px] font-mono tabular-nums ${readiness.tone}`}>
+        <div className="flex items-center gap-3 shrink-0 pt-0.5">
+          <span className={`text-xs font-mono tabular-nums ${readiness.tone}`}>
             {readiness.label} · {wordCount}w
           </span>
 
           <button
             type="button"
             onClick={() => setShowExample((prev) => !prev)}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors whitespace-nowrap"
           >
             {showExample ? (
-              <ChevronDown className="w-3 h-3" />
+              <ChevronDown className="w-3.5 h-3.5" />
             ) : (
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3.5 h-3.5" />
             )}
-            <span>Example &amp; Why</span>
+            <span>Example</span>
           </button>
         </div>
       </div>
 
-      {/* Concise 1-Line Prompt Hint */}
-      <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug">
-        {hint}
-      </p>
-
-      {/* Expandable Progressive Guidance Drawer */}
       {showExample && (
-        <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/70 border border-neutral-200 dark:border-neutral-700/80 space-y-2 text-xs">
-          <div className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-            <span className="font-semibold text-neutral-900 dark:text-neutral-100">Why this helps: </span>
-            {whyItMatters}
-          </div>
-          <div className="p-2.5 rounded-md bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700 font-mono text-[11px] text-neutral-700 dark:text-neutral-300 leading-relaxed">
+        <div className="p-3.5 rounded-xl bg-neutral-50/90 dark:bg-slate-800/70 border border-neutral-200/80 dark:border-white/10 space-y-2.5 text-xs sm:text-sm">
+          {whyItMatters && (
+            <div className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              <span className="font-semibold text-neutral-900 dark:text-white">Why it matters: </span>
+              {whyItMatters}
+            </div>
+          )}
+          <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-neutral-200/80 dark:border-white/10 font-mono text-xs text-neutral-800 dark:text-neutral-200 leading-relaxed">
             {exampleText}
           </div>
           <div className="flex justify-end">
@@ -85,22 +86,21 @@ export const FieldWithGuidance: React.FC<FieldWithGuidanceProps> = ({
                 onChange(exampleText);
                 setShowExample(false);
               }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-neutral-900 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-950 dark:text-white bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
             >
-              <Sparkles className="w-3 h-3 text-indigo-500" />
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
               <span>Use Example</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* Clean Input Textarea */}
       <textarea
         rows={rows}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3.5 py-2.5 text-xs font-normal text-neutral-900 dark:text-neutral-100 bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500/60 dark:focus:ring-indigo-400/60 transition-all placeholder:text-neutral-400 leading-relaxed"
+        className="w-full px-4 py-3 text-sm font-normal text-neutral-950 dark:text-neutral-50 bg-white/80 dark:bg-slate-950/60 border border-neutral-200/90 dark:border-white/15 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:focus:ring-indigo-400/40 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-500 leading-relaxed"
       />
     </div>
   );

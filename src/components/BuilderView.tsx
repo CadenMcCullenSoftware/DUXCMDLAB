@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   AgentConfigurationInputs,
@@ -10,6 +10,7 @@ import { simplifyAndRedactText } from '../utils/simpleVocabulary';
 import { FieldWithGuidance } from './FieldWithGuidance';
 import { StepHandoffBar } from './StepHandoffBar';
 import { StepCompliancePanel } from './StepCompliancePanel';
+import { SystemBlueprintBanner } from './SystemBlueprintBanner';
 import {
   ShieldCheck,
   Cpu,
@@ -25,6 +26,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+export type BuilderSection = 'role' | 'arch' | 'domain' | 'persona';
+
 interface BuilderViewProps {
   inputs: AgentConfigurationInputs;
   setInputs: React.Dispatch<React.SetStateAction<AgentConfigurationInputs>>;
@@ -38,9 +41,8 @@ interface BuilderViewProps {
   onResetToBlank: () => void;
   onNavigateToTab: (tab: WorkspaceTab) => void;
   hasOptimizedResult: boolean;
+  requestedSection?: { section: BuilderSection; nonce: number } | null;
 }
-
-type BuilderSection = 'role' | 'arch' | 'domain' | 'persona';
 
 const SECTION_ORDER: BuilderSection[] = ['role', 'arch', 'domain', 'persona'];
 
@@ -50,30 +52,30 @@ const SECTION_META: Record<
 > = {
   role: {
     num: '1.1',
-    label: 'Main Goal',
-    subprocessTag: 'SP-01 · Goal',
-    summary: 'Main job, daily tasks, final output, and how to know it passed.',
+    label: 'Purpose & Goal',
+    subprocessTag: 'SP-01',
+    summary: 'Defines the exact job, required deliverables, and measurable pass criteria enforced on every turn.',
     icon: ShieldCheck,
   },
   arch: {
     num: '1.2',
-    label: 'Hard Limits',
-    subprocessTag: 'SP-02 · No-Loop & Limits',
-    summary: 'Safety limits, no auto-loop rules, allowed cmd:* commands, and stop rules.',
+    label: 'Safety & Limits',
+    subprocessTag: 'SP-02',
+    summary: 'Sets hard "never do" boundaries, blocks auto-fix loops, refuses profiling, and controls allowed commands.',
     icon: Cpu,
   },
   domain: {
     num: '1.3',
-    label: 'Facts & Rules',
-    subprocessTag: 'SP-03 · Proof & Math',
-    summary: 'Checking skills, trusted guides, 5th-grade word rules, and 4 proof levels.',
+    label: 'Facts & Sources',
+    subprocessTag: 'SP-03',
+    summary: 'Grounds answers in verified files, math checks, 4 proof tiers, and verifiable https:// URLs.',
     icon: Layers,
   },
   persona: {
     num: '1.4',
-    label: 'Voice & Shape',
-    subprocessTag: 'SP-04 · Person Gate',
-    summary: 'Plain calm voice, banned fluff words, and clear output headings.',
+    label: 'Output Format',
+    subprocessTag: 'SP-04',
+    summary: 'Locks response structure (TechnicalResponsePayload JSON or report), tone, and zero ambient filler.',
     icon: MessageSquareCode,
   },
 };
@@ -91,10 +93,17 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
   onResetToBlank,
   onNavigateToTab,
   hasOptimizedResult,
+  requestedSection,
 }) => {
   const [activeSection, setActiveSection] = useState<BuilderSection>('role');
   const [showTemplatesDrawer, setShowTemplatesDrawer] = useState<boolean>(false);
   const [showPresetMenu, setShowPresetMenu] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (requestedSection?.section) {
+      setActiveSection(requestedSection.section);
+    }
+  }, [requestedSection]);
 
   const updateField = (
     section: keyof AgentConfigurationInputs,
@@ -189,80 +198,82 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      {/* Focused Step Header + Compact Utility Triggers */}
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* Focused Step Header + Compact Controls */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
-            Step 1 of 5 · Set Up Helper Steps
+        <div className="space-y-1.5">
+          <div className="text-xs sm:text-sm font-mono text-neutral-500 dark:text-neutral-400">
+            Step 1 of 5 · Configure Rules
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mt-0.5">
-            Set Up Simple Reasoning Rules
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 dark:text-white">
+            Design Your Agent Rule Engine
           </h1>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
-            Write clear 5th-grade rules for goals, safety limits, math checks, and plain answers. Open <span className="font-semibold text-neutral-800 dark:text-neutral-200">Example &amp; Why</span> on any box to see an example.
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 max-w-2xl leading-relaxed">
+            Define what the AI must accomplish, what it is forbidden from doing, and the exact JSON or report structure it must return.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
+        <div className="flex items-center gap-2.5 flex-wrap shrink-0">
           <button
             type="button"
             onClick={() => setShowTemplatesDrawer((prev) => !prev)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl border transition-colors ${
               showTemplatesDrawer
                 ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 dark:border-neutral-100'
-                : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-700 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
+                : 'depth-strip text-neutral-800 dark:text-neutral-100 hover:border-neutral-400'
             }`}
           >
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>Starter Lessons</span>
-            {showTemplatesDrawer ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            <GraduationCap className="w-4 h-4" />
+            <span>Lessons</span>
+            {showTemplatesDrawer ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </button>
 
-          <div className="flex items-center gap-1 px-2.5 py-1.5 bg-white/80 dark:bg-neutral-900/80 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+          <div className="depth-strip flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm">
+            <SlidersHorizontal className="w-4 h-4 text-neutral-500 shrink-0" />
             <select
               value={optimizationMode}
               onChange={(e) => setOptimizationMode(e.target.value)}
-              aria-label="Rule build style"
-              className="bg-transparent border-0 text-xs font-medium text-neutral-800 dark:text-neutral-200 focus:ring-0 focus:outline-none cursor-pointer pr-1"
+              aria-label="Final output compiler format"
+              className="bg-transparent border-0 text-xs sm:text-sm font-semibold text-neutral-900 dark:text-neutral-100 focus:ring-0 focus:outline-none cursor-pointer pr-1"
             >
-              <option value="strict_technical" className="dark:bg-neutral-900">Strict Simple</option>
-              <option value="deep_specification" className="dark:bg-neutral-900">Full Rule Sheet</option>
-              <option value="minimalist_invariant" className="dark:bg-neutral-900">Short Limits</option>
+              <option value="technical_json_schema" className="dark:bg-slate-900">JSON Schema Payload</option>
+              <option value="strict_technical" className="dark:bg-slate-900">Strict Plain Rules</option>
+              <option value="deep_specification" className="dark:bg-slate-900">Full Rule Spec</option>
+              <option value="minimalist_invariant" className="dark:bg-slate-900">Minimal Guardrails</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Step 1 Rule Checks & Notes */}
+      {/* What / Why / How Final Output Functions */}
+      <SystemBlueprintBanner
+        onJumpToAudit={() => onNavigateToTab('audit')}
+        onJumpToSimulator={() => onNavigateToTab('simulator')}
+      />
+
+      {/* Collapsed Step 1 Rule Bar */}
       <StepCompliancePanel
         step="builder"
         satisfiedIds={satisfiedComplianceIds}
         actionButton={{
-          label: 'Add No-Loop & Command Rules',
+          label: 'Add No-Loop Rules',
           onClick: handleApplyCompliantBaseline,
         }}
       />
 
       {/* Collapsible Starter Lessons Drawer */}
       {showTemplatesDrawer && (
-        <div className="p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl space-y-4 shadow-xs">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-neutral-200/80 dark:border-neutral-800/80">
-            <div>
-              <h2 className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
-                Sample Lessons &amp; Starter Setups
-              </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                Pick a sample to see how weak drafts compare with strong, simple rules.
-              </p>
-            </div>
+        <div className="depth-block p-6 rounded-3xl space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-neutral-200/80 dark:border-white/10">
+            <h2 className="text-base font-bold text-neutral-950 dark:text-white">
+              Starter Lessons
+            </h2>
 
             <div className="flex items-center gap-2 relative">
               <button
                 type="button"
                 onClick={() => setShowPresetMenu((prev) => !prev)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-neutral-400"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 bg-neutral-100/80 dark:bg-slate-800 border border-neutral-200 dark:border-white/10 rounded-xl hover:border-neutral-400"
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>All Presets</span>
@@ -274,14 +285,14 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
                   onResetToBlank();
                   setShowPresetMenu(false);
                 }}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white border border-neutral-200 dark:border-white/10 rounded-xl"
               >
-                <RotateCcw className="w-3 h-3" />
-                <span>Clear Draft</span>
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
               </button>
 
               {showPresetMenu && (
-                <div className="absolute right-0 top-10 w-72 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl py-1 z-30 max-h-72 overflow-y-auto divide-y divide-neutral-100 dark:divide-neutral-700/50">
+                <div className="absolute right-0 top-11 w-72 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-white/15 rounded-2xl shadow-2xl py-1 z-30 max-h-72 overflow-y-auto divide-y divide-neutral-100 dark:divide-white/10">
                   {PRESET_AGENTS.map((preset) => (
                     <button
                       key={preset.id}
@@ -290,12 +301,12 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
                         onSelectPreset(preset);
                         setShowPresetMenu(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50"
+                      className="w-full text-left px-3.5 py-2.5 text-xs sm:text-sm hover:bg-neutral-50 dark:hover:bg-slate-800"
                     >
                       <div className="font-semibold text-neutral-900 dark:text-neutral-100">
                         {simplifyAndRedactText(preset.name)}
                       </div>
-                      <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                      <div className="text-xs text-neutral-500 dark:text-neutral-400">
                         {simplifyAndRedactText(preset.category)}
                         {preset.difficulty ? ` · ${simplifyAndRedactText(preset.difficulty)}` : ''}
                       </div>
@@ -314,23 +325,23 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
                   key={tpl.id}
                   type="button"
                   onClick={() => onSelectPreset(tpl)}
-                  className={`text-left p-3.5 rounded-xl border transition-all flex flex-col justify-between gap-2 ${
+                  className={`text-left p-4 rounded-2xl border transition-all flex flex-col justify-between gap-2 ${
                     isSelected
                       ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 dark:border-neutral-100'
-                      : 'bg-neutral-50/70 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
+                      : 'bg-white/75 dark:bg-slate-800/60 border-neutral-200/80 dark:border-white/10 hover:border-neutral-400'
                   }`}
                 >
                   <div className="space-y-1">
-                    <div className={`text-[10px] font-mono ${isSelected ? 'opacity-75' : 'text-neutral-500 dark:text-neutral-400'}`}>
+                    <div className={`text-xs font-mono ${isSelected ? 'opacity-75' : 'text-neutral-500 dark:text-neutral-400'}`}>
                       {tpl.difficulty || 'Sample'}
                     </div>
-                    <div className="text-xs font-bold leading-snug">{simplifyAndRedactText(tpl.name)}</div>
-                    <p className={`text-[11px] line-clamp-2 ${isSelected ? 'opacity-85' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                    <div className="text-sm font-bold leading-snug">{simplifyAndRedactText(tpl.name)}</div>
+                    <p className={`text-xs line-clamp-2 ${isSelected ? 'opacity-85' : 'text-neutral-600 dark:text-neutral-300'}`}>
                       {simplifyAndRedactText(tpl.description)}
                     </p>
                   </div>
-                  <div className="text-[11px] font-semibold">
-                    {isSelected ? 'Loaded in Step 1' : 'Load Lesson →'}
+                  <div className="text-xs font-semibold">
+                    {isSelected ? 'Loaded' : 'Load →'}
                   </div>
                 </button>
               );
@@ -338,19 +349,16 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
           </div>
 
           {activePreset?.isTeachingTemplate && activePreset.teachingLesson && (
-            <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+            <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-800/65 border border-neutral-200/80 dark:border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs sm:text-sm">
               <div className="space-y-1">
-                <div className="font-semibold text-neutral-900 dark:text-neutral-100">
-                  Lesson Note: {simplifyAndRedactText(activePreset.name)}
-                </div>
-                <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                <p className="text-neutral-700 dark:text-neutral-200 leading-relaxed">
                   {simplifyAndRedactText(activePreset.teachingLesson)}
                 </p>
                 {activePreset.expectedPitfalls && activePreset.expectedPitfalls.length > 0 && (
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-[11px] text-amber-700 dark:text-amber-400">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-amber-700 dark:text-amber-400">
                     <span className="inline-flex items-center gap-1 font-semibold">
-                      <AlertTriangle className="w-3 h-3" />
-                      Common Mistakes:
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Watch out:
                     </span>
                     {activePreset.expectedPitfalls.map((pitfall, idx) => (
                       <span key={idx}>• {simplifyAndRedactText(pitfall)}</span>
@@ -363,18 +371,18 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigateToTab('audit')}
-                  className="px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg hover:border-neutral-400"
+                  className="px-3.5 py-2 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 bg-white dark:bg-slate-900 border border-neutral-300 dark:border-white/15 rounded-xl hover:border-neutral-400"
                 >
-                  Check Draft First
+                  Check Draft
                 </button>
                 {activePreset.recommendedTestProbe && (
                   <button
                     type="button"
                     onClick={() => onRunRecommendedProbe(activePreset.recommendedTestProbe!)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-lg"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-xl"
                   >
-                    <Play className="w-3 h-3" />
-                    <span>Run Sample Test</span>
+                    <Play className="w-3.5 h-3.5" />
+                    <span>Run Test</span>
                   </button>
                 )}
               </div>
@@ -384,7 +392,7 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
       )}
 
       {/* Clean 4-Part Picker */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-1.5 rounded-2xl bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md">
+      <div className="depth-strip grid grid-cols-2 md:grid-cols-4 gap-2 p-2 rounded-2xl">
         {SECTION_ORDER.map((sectionId) => {
           const meta = SECTION_META[sectionId];
           const Icon = meta.icon;
@@ -396,50 +404,50 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
               key={sectionId}
               type="button"
               onClick={() => setActiveSection(sectionId)}
-              className={`relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors z-10 ${
+              className={`relative flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-colors z-10 ${
                 isActive
                   ? 'text-neutral-950 dark:text-white'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100'
               }`}
             >
               {isActive && (
                 <motion.div
                   layoutId="builderSubStepIndicator"
-                  className="absolute inset-0 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-xs -z-10"
+                  className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl border border-neutral-200/90 dark:border-white/15 shadow-sm -z-10"
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
 
               <Icon className="w-4 h-4 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold truncate">
+              <div className="min-w-0 flex-1 flex items-center justify-between gap-2">
+                <span className="text-xs sm:text-sm font-bold truncate">
                   {meta.num} {meta.label}
-                </div>
-                <div className="text-[10px] font-mono tabular-nums text-neutral-500 dark:text-neutral-400 truncate">
-                  {meta.subprocessTag} · {progress.filled}/{progress.total}
-                </div>
+                </span>
+                <span className="text-xs font-mono tabular-nums text-neutral-500 dark:text-neutral-400 shrink-0">
+                  {progress.filled}/{progress.total}
+                </span>
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* Focused Editor Card */}
-      <div className="bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-xs">
-        <div className="pb-5 mb-6 border-b border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
-              {currentMeta.num}. {currentMeta.label}
-              <span className="ml-2 text-xs font-mono font-normal text-indigo-600 dark:text-indigo-400">
-                · {currentMeta.subprocessTag}
+      {/* Elevated Depth Editor Block */}
+      <div className="depth-block rounded-3xl p-6 sm:p-8 lg:p-10">
+        <div className="pb-5 mb-7 border-b border-neutral-200/80 dark:border-white/10 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+          <div className="space-y-1">
+            <h2 className="text-lg sm:text-xl font-bold text-neutral-950 dark:text-white">
+              {currentMeta.num} {currentMeta.label}
+              <span className="ml-2.5 text-xs sm:text-sm font-mono font-semibold text-indigo-600 dark:text-indigo-400">
+                · Gate {currentMeta.subprocessTag}
               </span>
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
               {currentMeta.summary}
             </p>
           </div>
-          <span className="text-xs font-mono tabular-nums text-neutral-500 dark:text-neutral-400 shrink-0">
-            {currentProgress.filled} of {currentProgress.total} boxes filled
+          <span className="text-xs sm:text-sm font-mono tabular-nums text-neutral-500 dark:text-neutral-400 shrink-0 pt-0.5">
+            {currentProgress.filled}/{currentProgress.total} filled
           </span>
         </div>
 
@@ -448,31 +456,31 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
           <div className="space-y-6">
             <FieldWithGuidance
               label="Main Goal"
-              hint="Write in 1–2 short sentences what this setup does and what problem it solves."
-              whyItMatters="Keeps the builder focused so later rules never drift away from your goal."
+              hint="Write in 1–2 plain sentences what this setup does."
+              whyItMatters="Keeps the engine focused on your main job."
               exampleText="Check code updates for safety bugs and suggest 1 small fix using simple 5th-grade words."
               value={inputs.roleObjectives.primaryObjective}
               onChange={(v) => updateField('roleObjectives', 'primaryObjective', v)}
-              placeholder="e.g. Check numbers and code updates safely and point out exact mistakes..."
+              placeholder="e.g. Check numbers and code updates safely..."
               rows={2}
             />
 
             <FieldWithGuidance
               label="Daily Tasks"
-              hint="List the exact jobs the system runs on each message."
-              whyItMatters="Turns loose wishes into a clear step-by-step checklist."
-              exampleText="1. Read the input numbers or code; 2. Check safety limits; 3. Verify math equations; 4. Show 1 small fix."
+              hint="List the exact steps run on each message."
+              whyItMatters="Turns loose wishes into clear steps."
+              exampleText="1. Read numbers or code; 2. Check safety limits; 3. Verify math equations; 4. Show 1 small fix."
               value={inputs.roleObjectives.primaryTasks}
               onChange={(v) => updateField('roleObjectives', 'primaryTasks', v)}
-              placeholder="e.g. 1. Read input, 2. Check safety rules, 3. Verify math..."
+              placeholder="e.g. 1. Read input, 2. Check limits, 3. Check math..."
               rows={3}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FieldWithGuidance
                 label="Final Output"
-                hint="Name the exact result returned (short report, SQL, JSON, table)."
-                whyItMatters="Stops chatty filler when you need a clean report or table."
+                hint="Name the result format (report, SQL, JSON, table)."
+                whyItMatters="Stops extra chatter when you want a clean output."
                 exampleText="Short Markdown report listing line numbers, risk level, and 1 small fix."
                 value={inputs.roleObjectives.finalOutputs}
                 onChange={(v) => updateField('roleObjectives', 'finalOutputs', v)}
@@ -482,8 +490,8 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
 
               <FieldWithGuidance
                 label="How to Know It Passed"
-                hint="Write clear pass/fail numbers or rules (zero guesses, exact math, simple words)."
-                whyItMatters="Gives Step 3 Check clear pass marks to score against."
+                hint="Set pass rules (zero guesses, exact math, simple words)."
+                whyItMatters="Gives Step 3 Check clear rules to score."
                 exampleText="0% power spent on personal stories, 100% accurate math (like 2 + 2 = 4), and simple 5th-grade words."
                 value={inputs.roleObjectives.successMetrics}
                 onChange={(v) => updateField('roleObjectives', 'successMetrics', v)}
@@ -499,9 +507,9 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FieldWithGuidance
-                label="Safe Limits (What Is In Scope)"
-                hint="Say what files, numbers, or rules the system may read—and nothing else."
-                whyItMatters="Stops the AI from guessing about missing files or running outside safe folders."
+                label="Safe Limits"
+                hint="List allowed files, numbers, or rules—nothing else."
+                whyItMatters="Stops guessing about missing files."
                 exampleText="Work only on the numbers and files given. Give 0% power to personal stories or personal roles."
                 value={inputs.systemArchitecture.operationalBoundaries}
                 onChange={(v) => updateField('systemArchitecture', 'operationalBoundaries', v)}
@@ -511,8 +519,8 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
 
               <FieldWithGuidance
                 label='Hard "Never Do" Rules'
-                hint="Write strict stop rules and no-loop locks that tricks cannot turn off."
-                whyItMatters="Blocks repeating auto-fix loops, prompt tricks, and fake proven claims."
+                hint="Set strict stop rules and no-loop locks."
+                whyItMatters="Blocks repeating auto-fix loops and overrides."
                 exampleText="Never loop auto-edits on code or logic (max_auto_adjust_loops = 0). Never mark unrun code as Verified."
                 value={inputs.systemArchitecture.executionConstraints}
                 onChange={(v) => updateField('systemArchitecture', 'executionConstraints', v)}
@@ -523,8 +531,8 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
 
             <FieldWithGuidance
               label="Step Order"
-              hint="Write the step-by-step order from reading input to sending the answer."
-              whyItMatters="Makes sure power, safety, and math checks run before any answer is written."
+              hint="Write the step order from input to final output."
+              whyItMatters="Runs safety and math gates before any answer."
               exampleText="1. SP-01 Power & Goal -> 2. SP-02 Limits & No-Loop -> 3. SP-03 Math & Proof -> 4. SP-04 Person Gate."
               value={inputs.systemArchitecture.workflowSequence}
               onChange={(v) => updateField('systemArchitecture', 'workflowSequence', v)}
@@ -534,9 +542,9 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FieldWithGuidance
-                label="Allowed Tools & AI Commands"
-                hint="List the exact one-pass commands allowed to run."
-                whyItMatters="Limits what the engine can run so every action stays safe."
+                label="Allowed AI Commands"
+                hint="List allowed one-pass cmd:* commands."
+                whyItMatters="Keeps actions limited and safe."
                 exampleText="Allowed AI commands only: cmd:triage_resource, cmd:search_evidence, cmd:verify_claim, cmd:propose_single_patch, cmd:escalate_human_gate."
                 value={inputs.systemArchitecture.toolUsePolicies}
                 onChange={(v) => updateField('systemArchitecture', 'toolUsePolicies', v)}
@@ -546,8 +554,8 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
 
               <FieldWithGuidance
                 label="Stop Rules for Bad Input"
-                hint="Say what happens when input is broken, math is wrong, or an auto-loop is asked."
-                whyItMatters="Stops wild AI guessing when messy or tricky input arrives."
+                hint="Say what happens on broken input, bad math, or loops."
+                whyItMatters="Prevents guessing when messy input arrives."
                 exampleText="If input asks for an auto-loop, stop with [LOOP RULE BROKEN] and show 1 fix waiting for (y/N)."
                 value={inputs.systemArchitecture.edgeCases}
                 onChange={(v) => updateField('systemArchitecture', 'edgeCases', v)}
@@ -562,9 +570,9 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
         {activeSection === 'domain' && (
           <div className="space-y-6">
             <FieldWithGuidance
-              label="Checking Skills & Methods"
-              hint="Name the checking skills or math rules the setup uses."
-              whyItMatters="Makes answers concrete and step-by-step instead of vague advice."
+              label="Checking Methods"
+              hint="Name the checks or math rules used."
+              whyItMatters="Keeps answers concrete and step-by-step."
               exampleText="Math equation checks, safe SQL checks, folder path rules, and 4-level claim checks."
               value={inputs.domainExpertise.technicalCapabilities}
               onChange={(v) => updateField('domainExpertise', 'technicalCapabilities', v)}
@@ -574,8 +582,8 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
 
             <FieldWithGuidance
               label="Trusted Guides & Files"
-              hint="Name the official guides or config files to follow."
-              whyItMatters="Keeps answers anchored to real docs instead of made-up names."
+              hint="Name official docs or config files to follow."
+              whyItMatters="Anchors answers to real docs."
               exampleText="Official TypeScript guide, SQL safety list, and .config/duxcmd.json."
               value={inputs.domainExpertise.knowledgeBases}
               onChange={(v) => updateField('domainExpertise', 'knowledgeBases', v)}
@@ -585,9 +593,9 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FieldWithGuidance
-                label="Safety & Word Standards"
-                hint="Name safety rules and simple 5th-grade language standards."
-                whyItMatters="Makes sure complex words get swapped or marked [REDACTED]."
+                label="Safety & Word Rules"
+                hint="Enforce simple 5th-grade language and safety rules."
+                whyItMatters="Swaps hard words or marks them [REDACTED]."
                 exampleText="Simple 5th-grade words only; redact hard unknown words as [REDACTED]. Follow Zero Trust folder rules."
                 value={inputs.domainExpertise.referenceStandards}
                 onChange={(v) => updateField('domainExpertise', 'referenceStandards', v)}
@@ -596,9 +604,9 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
               />
 
               <FieldWithGuidance
-                label="Labels & Formatting Rules"
-                hint="Name exact tags for dates, math, and proof levels."
-                whyItMatters="Keeps every answer matching the same clean format."
+                label="Proof Tags & Labels"
+                hint="Set exact tags for math, dates, and proof levels."
+                whyItMatters="Keeps every reply matching one clear layout."
                 exampleText="Use exact proof tags [Verified | Supported Inference | Unknown | Disputed] and SINGLE_PASS_ONLY."
                 value={inputs.domainExpertise.algorithmicConventions}
                 onChange={(v) => updateField('domainExpertise', 'algorithmicConventions', v)}
@@ -615,8 +623,8 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FieldWithGuidance
                 label="Plain Voice"
-                hint="Describe the calm, clear tone to use."
-                whyItMatters="Replaces chatty AI filler with simple, direct facts."
+                hint="Describe the clear, factual tone."
+                whyItMatters="Keeps answers calm and direct."
                 exampleText="Calm Fact Checker: short, direct 5th-grade words, zero small talk."
                 value={inputs.personaInteraction.toneAndVoice}
                 onChange={(v) => updateField('personaInteraction', 'toneAndVoice', v)}
@@ -625,10 +633,10 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
               />
 
               <FieldWithGuidance
-                label="Shortness & Clarity Rules"
-                hint="Say how short sentences should be and ban AI guessing phrases."
-                whyItMatters="Keeps extra fluff below 5% in Step 3 Check."
-                exampleText="Short bullet points in plain 5th-grade words. Never say 'I think', 'probably', or 'it seems'."
+                label="Shortness Rules"
+                hint="Keep sentences short and ban guessing words."
+                whyItMatters="Keeps fluff below 5% in Step 3 Check."
+                exampleText="Short bullet points in plain 5th-grade words. Never guess."
                 value={inputs.personaInteraction.communicationRegister}
                 onChange={(v) => updateField('personaInteraction', 'communicationRegister', v)}
                 placeholder="e.g. Short clear bullets; zero guesses..."
@@ -637,20 +645,20 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
             </div>
 
             <FieldWithGuidance
-              label="Banned Words & Fluff"
-              hint="List filler openings, guesses, or hard words that are banned."
-              whyItMatters="Clear negative word lists keep unwanted small talk out."
-              exampleText="Banned: 'Certainly!', 'Hope this helps!', 'As an AI', 'I think', 'It seems to work'."
+              label="Banned Fluff"
+              hint="List small talk or hard words to keep out."
+              whyItMatters="Stops unwanted filler."
+              exampleText="Banned: chatty sign-offs, AI self-talk, unsure guesses, or hard jargon."
               value={inputs.personaInteraction.forbiddenPhrasing}
               onChange={(v) => updateField('personaInteraction', 'forbiddenPhrasing', v)}
-              placeholder="e.g. 'Certainly!', 'As an AI', 'Hope this helps!'..."
+              placeholder="e.g. Polite sign-offs, guessing claims, small talk..."
               rows={2}
             />
 
             <FieldWithGuidance
               label="Output Shape"
-              hint="Show the exact headings, table columns, or JSON shape to print."
-              whyItMatters="Makes sure every reply looks clean and matches your layout."
+              hint="Set exact headings, table columns, or JSON layout."
+              whyItMatters="Keeps every answer tidy and easy to scan."
               exampleText="### Finding [RISK]\n- File & Line\n- Plain Reason\n- 1 Small Fix"
               value={inputs.personaInteraction.formatSchemas}
               onChange={(v) => updateField('personaInteraction', 'formatSchemas', v)}
@@ -665,16 +673,16 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
           stepLabel={`${currentMeta.num} ${currentMeta.label}`}
           completedSummary={
             nextSection
-              ? `${currentProgress.filled} of ${currentProgress.total} boxes filled here. Next: ${SECTION_META[nextSection].num} ${SECTION_META[nextSection].label}.`
-              : `${totalPillarsWithContent} of 4 parts filled. Click Build Rules to unlock Step 2 Compare.`
+              ? `${currentProgress.filled}/${currentProgress.total} boxes filled here.`
+              : `${totalPillarsWithContent}/4 parts ready. Build rules next.`
           }
           isStepComplete={currentProgress.filled >= Math.max(1, Math.ceil(currentProgress.total / 2))}
-          backLabel={prevSection ? `Back to ${SECTION_META[prevSection].num}` : undefined}
+          backLabel={prevSection ? `Back: ${SECTION_META[prevSection].num}` : undefined}
           onBack={prevSection ? () => setActiveSection(prevSection) : undefined}
           secondaryAction={
             nextSection
               ? {
-                  label: hasOptimizedResult ? 'Go to Step 2' : 'Build Rules Now',
+                  label: hasOptimizedResult ? 'Go to Step 2' : 'Build Rules',
                   onClick: hasOptimizedResult ? () => onNavigateToTab('review') : onOptimize,
                   disabled: isOptimizing,
                 }
@@ -685,7 +693,7 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
               ? `Next: ${SECTION_META[nextSection].num} ${SECTION_META[nextSection].label}`
               : isOptimizing
               ? 'Building Rules...'
-              : 'Build Rules & Go to Step 2'
+              : 'Build Rules'
           }
           primaryIcon={nextSection ? 'arrow' : 'sparkles'}
           isPrimaryLoading={!nextSection && isOptimizing}

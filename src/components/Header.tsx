@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Sun, Moon, Download, History, Terminal } from 'lucide-react';
+import { Sparkles, Sun, Moon, Download, History, Terminal, HelpCircle } from 'lucide-react';
 import { WorkspaceTab } from '../types/agent';
 
 interface HeaderProps {
@@ -8,6 +8,7 @@ interface HeaderProps {
   isOptimizing: boolean;
   onOpenExport: () => void;
   onOpenHistory: () => void;
+  onOpenIntro: () => void;
   isLogSidebarOpen: boolean;
   onToggleLogSidebar: () => void;
   logCount: number;
@@ -23,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   isOptimizing,
   onOpenExport,
   onOpenHistory,
+  onOpenIntro,
   isLogSidebarOpen,
   onToggleLogSidebar,
   logCount,
@@ -32,13 +34,8 @@ export const Header: React.FC<HeaderProps> = ({
   snapshotCount,
 }) => {
   return (
-    <header className="sticky top-0 z-40 relative border-b border-neutral-200/80 dark:border-neutral-800/80 bg-white/85 dark:bg-neutral-900/85 backdrop-blur-xl transition-colors">
-      {/* Subtle Top Chromatic Aura */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute -top-12 left-1/3 w-96 h-20 bg-gradient-to-r from-indigo-500/20 via-violet-500/15 to-cyan-400/20 blur-2xl animate-pulse-glow" />
-      </div>
-
-      <div className="flex items-center justify-between gap-8 px-4 sm:px-6 py-3 relative z-10 max-w-5xl mx-auto">
+    <header className="sticky top-0 z-40 relative border-b border-neutral-200/70 dark:border-white/10 bg-white/75 dark:bg-slate-950/75 backdrop-blur-2xl transition-colors">
+      <div className="flex items-center justify-between gap-8 px-4 sm:px-6 lg:px-8 py-3.5 relative z-10 max-w-6xl mx-auto">
         {/* Zone 1: Single Wordmark */}
         <a
           href="#"
@@ -46,36 +43,46 @@ export const Header: React.FC<HeaderProps> = ({
             e.preventDefault();
             setActiveTab('builder');
           }}
-          className="text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 whitespace-nowrap shrink-0 hover:opacity-80 transition-opacity"
+          className="font-display text-lg sm:text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 whitespace-nowrap shrink-0 hover:opacity-80 transition-opacity"
         >
           Agent Architect
         </a>
 
         {/* Zone 2 & 3: Quiet Workspace Drawers + 1 Primary Action */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={onOpenIntro}
+            title="Open Setup Guide"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white bg-white/75 dark:bg-slate-900/75 border border-neutral-200/80 dark:border-white/10 rounded-xl transition-colors whitespace-nowrap"
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">Guide</span>
+          </button>
+
           {hasOptimizedResult && (
             <button
               type="button"
               onClick={onOpenExport}
               title="Export Rules & Code"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/90 dark:border-neutral-700/90 rounded-lg transition-colors whitespace-nowrap"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white bg-white/75 dark:bg-slate-900/75 border border-neutral-200/80 dark:border-white/10 rounded-xl transition-colors whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export File</span>
+              <Download className="w-4 h-4" />
+              <span>Export</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={onToggleLogSidebar}
-            title="Open Activity & Check Log"
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors whitespace-nowrap ${
+            title="Open Activity Log"
+            className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl border transition-colors whitespace-nowrap ${
               isLogSidebarOpen
                 ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 dark:border-neutral-100'
-                : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white bg-white/70 dark:bg-neutral-800/70 border-neutral-200/90 dark:border-neutral-700/90'
+                : 'text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white bg-white/75 dark:bg-slate-900/75 border-neutral-200/80 dark:border-white/10'
             }`}
           >
-            <Terminal className="w-3.5 h-3.5" />
+            <Terminal className="w-4 h-4" />
             <span className="hidden sm:inline">Activity</span>
             <span className="font-mono tabular-nums">{logCount}</span>
           </button>
@@ -84,9 +91,9 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={onOpenHistory}
             title="Saved Draft History"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/90 dark:border-neutral-700/90 rounded-lg transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white bg-white/75 dark:bg-slate-900/75 border border-neutral-200/80 dark:border-white/10 rounded-xl transition-colors whitespace-nowrap"
           >
-            <History className="w-3.5 h-3.5" />
+            <History className="w-4 h-4" />
             <span className="font-mono tabular-nums">{snapshotCount}</span>
           </button>
 
@@ -94,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={() => setIsDark(!isDark)}
             title="Switch Light / Dark Theme"
-            className="p-1.5 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="p-2 text-neutral-600 hover:text-neutral-950 dark:text-neutral-300 dark:hover:text-white rounded-xl hover:bg-neutral-100/80 dark:hover:bg-slate-800/80 transition-colors"
             aria-label="Toggle theme"
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -104,9 +111,9 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={onOptimize}
             disabled={isOptimizing}
-            className="relative inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-1.5 text-xs font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-[0.98] transition-all whitespace-nowrap shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs overflow-hidden"
+            className="relative inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-950 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-[0.98] transition-all whitespace-nowrap shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm overflow-hidden"
           >
-            <Sparkles className={`w-3.5 h-3.5 ${isOptimizing ? 'animate-spin' : ''}`} />
+            <Sparkles className={`w-4 h-4 ${isOptimizing ? 'animate-spin' : ''}`} />
             <span>{isOptimizing ? 'Building...' : 'Build Rules'}</span>
           </button>
         </div>

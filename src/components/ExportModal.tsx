@@ -154,21 +154,29 @@ def run_agent(prompt: str) -> str:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="depth-block rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200/80 dark:border-white/10">
           <div>
-            <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
-              Export Rules &amp; Code
+            <h2 className="text-lg font-bold text-neutral-950 dark:text-white">
+              Export Final Output &amp; SDK Code
             </h2>
-            <p className="text-xs text-neutral-500 mt-0.5">
-              Clean formats ready to copy or save into your project.
+            <p className="text-xs text-neutral-600 dark:text-neutral-300">
+              {exportFormat === 'markdown'
+                ? 'Human-readable specification sheet documenting your rule gates, limits, and proof tiers.'
+                : exportFormat === 'raw'
+                ? 'Drop directly into any model systemInstruction string to enforce SP-01 → SP-04 on every call.'
+                : exportFormat === 'ts'
+                ? 'Ready-to-run Node.js / TypeScript wrapper using @google/genai with your compiled rules preloaded.'
+                : exportFormat === 'python'
+                ? 'Ready-to-run Python wrapper using google-genai with your compiled rules preloaded.'
+                : 'Full structured JSON bundle with compiled systemInstruction, refined sections, and audit metrics.'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg transition-colors"
+            className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-xl transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

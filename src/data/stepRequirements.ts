@@ -65,162 +65,162 @@ export const AI_COMMAND_OPERATIONS_CATALOG: AiCommandOpDefinition[] = [
 export const STEP_COMPLIANCE_SPECS: Record<WorkspaceTab, StepComplianceSpec> = {
   builder: {
     step: 'builder',
-    heading: 'Step 1 Rules · Simple Limits & AI Commands',
+    heading: 'Step 1 Rules · Constraints, Schema & AI Commands',
     summaryLine:
-      'Write clear "never do" rules that block auto-loops, and pick exact cmd:* AI commands.',
+      'Define hard boundaries, exact TechnicalResponsePayload schema keys, and one-pass cmd:* commands.',
     antiLoopRule: 'NO_SELF_MODIFYING_LOOPS · max_auto_adjust_loops = 0',
     items: [
       {
         id: 'req-1-1',
-        title: 'Block Auto-Loops',
+        title: 'No-Loop & Profiling Refusal',
         requirement:
-          'Write in 1.2 Hard Rules that the system must stop any loop that keeps changing code or logic by itself.',
+          'Block repeating auto-fix loops (max_auto_adjust_loops = 0) and refuse personal profiling or personal opinions in 1.2 Hard Rules.',
         annotation:
-          'Note: Stops the AI from guessing in circles or changing code until a test passes by luck.',
+          'Note: Enforces strict technical scope and blocks speculative or personal trait inference.',
         commandOp: 'cmd:audit_invariants',
       },
       {
         id: 'req-1-2',
         title: 'Pick Exact AI Commands',
         requirement:
-          'List allowed commands in 1.2 Tool Rules using one-pass commands (cmd:search_evidence, cmd:verify_claim, cmd:propose_single_patch).',
+          'List allowed one-pass commands in 1.2 Tool Rules and enforce publicly verifiable https:// URLs with zero intent modeling.',
         annotation:
-          'Note: Only clear, one-step commands can run. No open-ended guessing.',
+          'Note: Prevents misinformation and ensures retrieved web context stays uncorrupted.',
         commandOp: 'cmd:propose_single_patch',
       },
       {
         id: 'req-1-3',
-        title: 'Numbers, Rules & 5th-Grade Words',
+        title: 'Schema Keys & Factual Grounding',
         requirement:
-          'Write rules in 1.2 Edge Cases & 1.4 Shape that give 0% power to stories/personas, check math (like 2 + 2 = 4), and swap or [REDACTED] hard words.',
+          'Enforce exact keys ("context", "explicit requirements", "response_data") without synonyms and keep math exact.',
         annotation:
-          'Note: Keeps computer power on real numbers, money rules, and plain 5th-grade language.',
+          'Note: Eliminates ambient text and aligns outputs with draft/2020-12 JSON Schema.',
         commandOp: 'cmd:triage_resource',
       },
     ],
   },
   review: {
     step: 'review',
-    heading: 'Step 2 Rules · Compare & Lock Steps',
+    heading: 'Step 2 Rules · Schema & Step Verification',
     summaryLine:
-      'Make sure SP-01 -> SP-04 built cleanly with no auto-loops and simple 5th-grade words.',
+      'Confirm SP-01 -> SP-04 compiled cleanly with zero drift, no auto-loops, and exact schema keys.',
     antiLoopRule: 'Check SINGLE_PASS_ONLY locks in SP-02 & SP-04',
     items: [
       {
         id: 'req-2-1',
-        title: 'Check No-Loop Rule',
+        title: 'No-Loop & Refusal Lock',
         requirement:
-          'Make sure the new rules clearly refuse automatic loops that rewrite code or logic.',
+          'Verify built rules block repeating auto-loops, personal profiling, and ambient conversational phrasing.',
         annotation:
-          'Note: Compare your old draft and new rules to make sure your main goal stayed 100% the same.',
+          'Note: Keeps original technical requirements 100% intact without speculative drift.',
         commandOp: 'cmd:audit_invariants',
       },
       {
         id: 'req-2-2',
-        title: 'Check Helper Step Commands',
+        title: 'Schema & Helper Trace',
         requirement:
-          'Look at the SP-01 -> SP-04 cards so every helper step uses one safe command.',
+          'Confirm TechnicalResponsePayload keys ("context", "explicit requirements", "response_data") and SP-01 -> SP-04 gates appear cleanly.',
         annotation:
-          'Note: Every turn runs in order: Goal -> Safety -> Math/Proof -> Person Check.',
+          'Note: Enforces Goal -> Limits -> Proof & URL check -> Valid Output in order.',
         commandOp: 'cmd:verify_claim',
       },
       {
         id: 'req-2-3',
-        title: 'Update When Draft Changes',
+        title: 'Rebuild After Edits',
         requirement:
-          'If you edit Step 1 after building, click Re-build before going to Step 3 Check.',
+          'If Step 1 fields change, click Re-build before auditing in Step 3.',
         annotation:
-          'Note: Keeps you from checking old rules that do not match your latest edits.',
+          'Note: Prevents auditing stale rules.',
         commandOp: 'cmd:search_evidence',
       },
     ],
   },
   audit: {
     step: 'audit',
-    heading: 'Step 3 Rules · Safety, No-Loop & Plain Words Check',
+    heading: 'Step 3 Rules · Schema, Profiling & URL Compliance',
     summaryLine:
-      'Check the built rules for no-loop locks, exact AI commands, and simple 5th-grade words with zero fluff.',
-    antiLoopRule: '0% tolerance for silent self-edits',
+      'Audit rules for Prerequisites Validation, TechnicalResponsePayload Schema, Profiling Refusal, and Verifiable URLs.',
+    antiLoopRule: '0% tolerance for ambient text or silent loops',
     items: [
       {
         id: 'req-3-1',
-        title: 'No-Loop & Command Score',
+        title: 'Schema & Anti-Loop Score',
         requirement:
-          'Make sure the No-Loop & AI Commands row passes with no big missing parts.',
+          'Confirm JSON Schema and No-Loop dimensions pass without CRITICAL findings.',
         annotation:
-          'Note: Flags any rule that tells the AI to "keep fixing in a loop" by itself.',
+          'Note: Flags missing schema keys, key synonyms, or retry-loop patterns.',
         commandOp: 'cmd:audit_invariants',
       },
       {
         id: 'req-3-2',
-        title: 'Honest Proof Check',
+        title: 'Factual & URL Grounding',
         requirement:
-          'Make sure code that has not actually run stays marked as Clue from Files, not Proven.',
+          'Verify claims use 4 proof levels and web context requires publicly verifiable https:// URLs without intent modeling.',
         annotation:
-          'Note: Stops the AI from claiming a test passed without real run proof.',
+          'Note: Stops unrun claims from being labeled Proven and blocks distorted external context.',
         commandOp: 'cmd:verify_claim',
       },
       {
         id: 'req-3-3',
-        title: 'One Fix at a Time',
+        title: 'Single-Pass Remediation',
         requirement:
-          'Fix any missing rule with one clear Step 1 edit or one Fix Missing Parts click—never an auto-loop.',
+          'Resolve any deficiency with one clean rule update instead of iterative auto-retries.',
         annotation:
-          'Note: Keeps a real person in charge of every change.',
+          'Note: Keeps deterministic human control over edits.',
         commandOp: 'cmd:propose_single_patch',
       },
     ],
   },
   simulator: {
     step: 'simulator',
-    heading: 'Step 4 Rules · Live Refusal & Simple Words Test',
+    heading: 'Step 4 Rules · Live Schema, Refusal & URL Tests',
     summaryLine:
-      'Test that SP-02 blocks auto-loops, SP-04 asks a person, and replies stay in simple 5th-grade words.',
-    antiLoopRule: 'Test live block on auto-loop commands',
+      'Verify pure TechnicalResponsePayload JSON output, personal profiling refusal, and web source protocol enforcement.',
+    antiLoopRule: 'Zero ambient text around JSON outputs',
     items: [
       {
         id: 'req-4-1',
-        title: 'Auto-Loop Block Test',
+        title: 'JSON Schema Validation',
         requirement:
-          'Run the "Stop Auto-Loop" test and make sure SP-02 blocks it with [LOOP RULE BROKEN].',
+          'Run "JSON Schema" and confirm output passes with exact keys: context, "explicit requirements", response_data.',
         annotation:
-          'Note: Proves the system stops repeating loops right on turn 1.',
+          'Note: Zero markdown preamble or conversational wrappers permitted.',
         commandOp: 'cmd:audit_invariants',
       },
       {
         id: 'req-4-2',
-        title: 'One-Step Fix Answer',
+        title: 'Profiling Refusal & No-Loop',
         requirement:
-          'Check that the block shows one safe command fix (cmd:propose_single_patch -> cmd:escalate_human_gate).',
+          'Run "Refuse Profiling" and "Stop Loop" to verify immediate refusal with zero trait inference.',
         annotation:
-          'Note: Instead of looping, it offers 1 small fix waiting for (y/N).',
+          'Note: Confirms SP-01 and SP-02 block non-technical and self-looping prompts.',
         commandOp: 'cmd:propose_single_patch',
       },
       {
         id: 'req-4-3',
-        title: 'Check Helper Steps Trace',
+        title: 'Web Source & URL Protocol',
         requirement:
-          'Open Show Steps on a reply to see how SP-01 through SP-04 checked the message.',
+          'Test "Web Source Rule" (verifiable https:// URL -> PASS) and "Bad Web URL" (intent modeling / local URL -> BLOCKED).',
         annotation:
-          'Note: Every check is saved inside the Activity Log drawer too.',
+          'Note: Verifies external context rules and URL integrity in SP-02/SP-03.',
         commandOp: 'cmd:escalate_human_gate',
       },
       {
         id: 'req-4-4',
         title: '0% Story & 100% Math Check',
         requirement:
-          'Run Example A (Personal · 0% Power) and Example B (Money & 2 + 2 = 4 · 100% Power).',
+          'Test "Story (0% Power)" and "Money & 2+2=4" to confirm deterministic arithmetic verification.',
         annotation:
-          'Note: Stories get 0% computer power. Real numbers and 2 + 2 = 4 are checked directly.',
+          'Note: Confirms exact numerical evaluation and zero speculative computation.',
         commandOp: 'cmd:triage_resource',
       },
     ],
   },
   swarmex: {
     step: 'swarmex',
-    heading: 'Step 5 Rules · Final Locks & Math Gate',
+    heading: 'Step 5 Rules · Final Sandbox & Schema Locks',
     summaryLine:
-      'Test file read-only limits, no-loop locks, person (y/N) approval, and math/simple-word gates.',
+      'Verify read-only folder bounds, no-loop lock, (y/N) human gate, and factual proof classification.',
     antiLoopRule: 'Enforce loop_policy.mode = SINGLE_PASS_ONLY',
     items: [
       {
@@ -236,18 +236,18 @@ export const STEP_COMPLIANCE_SPECS: Record<WorkspaceTab, StepComplianceSpec> = {
         id: 'req-5-2',
         title: 'Person Must Approve (SP-04)',
         requirement:
-          'Make sure DEPLOY, WRITE_SYS, EXECUTE, and PROPOSE_PATCH stop for (y/N) approval first.',
+          'Confirm DEPLOY, WRITE_SYS, EXECUTE, and PROPOSE_PATCH pause for (y/N) approval.',
         annotation:
-          'Note: Stops any background change from running without a person saying yes.',
+          'Note: Prevents unapproved side effects.',
         commandOp: 'cmd:escalate_human_gate',
       },
       {
         id: 'req-5-3',
-        title: 'Send Rules Back to Step 1',
+        title: 'Sync Policy Back to Step 1',
         requirement:
-          'Click "Send Rules to Step 1" after editing limits so Step 1 stays up to date.',
+          'Use "Send Rules to Step 1" after policy changes to keep Step 1 aligned.',
         annotation:
-          'Note: Updates your main setup cleanly under human control.',
+          'Note: Preserves consistent system boundaries.',
         commandOp: 'cmd:verify_claim',
       },
     ],

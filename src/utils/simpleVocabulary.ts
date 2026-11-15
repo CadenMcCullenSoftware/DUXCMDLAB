@@ -294,7 +294,10 @@ const FIFTH_GRADE_WORDS = new Set([
   'tolerance', 'modify', 'modifying', 'proposal', 'proposals', 'override', 'validation',
   'validate', 'confirm', 'confirmation', 'immediate', 'roleplay', 'researcher', 'openapi',
   'evidence', 'persona', 'personas', 'conflict', 'conflicts', 'removal', 'remove', 'removed',
-  'clarity', 'unproven',
+  'clarity', 'unproven', 'explicit', 'requirement', 'requirements', 'context', 'technical',
+  'external', 'protocol', 'verifiable', 'profiling', 'characteristics', 'factual', 'structured',
+  'accessible', 'reference', 'references', 'consistent', 'consistency', 'preamble', 'ambient',
+  'deviation', 'misinformation', 'publicly',
 ]);
 
 // Known complex academic / AI jargon words (even 2-3 syllables) that must be auto-redacted if unmapped
@@ -370,6 +373,14 @@ export function inspectAndCleanVocabulary(input: string): VocabularyAuditStats {
   let jargonSwappedCount = 0;
   let redactionCount = 0;
 
+  // Protect URLs so phrase rules (e.g., schema -> shape) never corrupt verifiable web links
+  const savedUrls: string[] = [];
+  text = text.replace(/https?:\/\/[^\s"'`<>]+/g, (url) => {
+    const idx = savedUrls.length;
+    savedUrls.push(url);
+    return `__PRESERVED_URL_${idx}__`;
+  });
+
   // Step 1: Strip vague AI guesses / filler interpretations
   for (const [pattern, replacement] of VAGUE_INTERPRETATION_RULES) {
     text = text.replace(pattern, () => {
@@ -391,15 +402,19 @@ export function inspectAndCleanVocabulary(input: string): VocabularyAuditStats {
     });
   }
 
-  // Step 3: Word-by-word 5th-grade check preserving technical command tokens, paths, snake_case IDs, and [REDACTED]
-  text = text.replace(/(`[^`]+`|cmd:[a-z0-9_]+|(?:\/|[a-zA-Z0-9_.-]+\/)[a-zA-Z0-9._\-\/]+|[A-Za-z0-9]+(?:_[A-Za-z0-9]+)+|\[REDACTED\]|[A-Za-z]+(?:'[A-Za-z]+)?)/g, (token) => {
-    // Keep inline code, typed command tags, paths, snake_case/constant identifiers, and existing [REDACTED] tokens untouched
+  // Step 3: Word-by-word 5th-grade check preserving technical command tokens, URLs, paths, snake_case IDs, and [REDACTED]
+  text = text.replace(/(`[^`]+`|__PRESERVED_URL_\d+__|https?:\/\/[^\s"'`]+|cmd:[a-z0-9_]+|(?:\/|[a-zA-Z0-9_.-]+\/)[a-zA-Z0-9._\-\/]+|[A-Za-z0-9]+(?:_[A-Za-z0-9]+)+|\[REDACTED\]|[A-Za-z]+(?:'[A-Za-z]+)?)/g, (token) => {
+    // Keep inline code, URLs, typed command tags, paths, snake_case/constant identifiers, and existing [REDACTED] tokens untouched
     if (
       token.startsWith('`') ||
+      token.startsWith('__PRESERVED_URL_') ||
+      token.startsWith('http://') ||
+      token.startsWith('https://') ||
       token.startsWith('cmd:') ||
       token.includes('/') ||
       token.includes('_') ||
-      token === '[REDACTED]'
+      token === '[REDACTED]' ||
+      token === 'TechnicalResponsePayload'
     ) {
       return token;
     }
@@ -408,7 +423,7 @@ export function inspectAndCleanVocabulary(input: string): VocabularyAuditStats {
     const baseWord = token.replace(/'[a-z]+$/i, '');
     if (/^[A-Z]{2,6}$/.test(token)) {
       // Short known acronyms like SQL, JSON, HTTP, CLI, PASS, FAIL, WARN, ZERO
-      if (/^(SQL|JSON|HTTP|CLI|API|UI|ID|URL|PASS|FAIL|WARN|ZERO|VM|OK|UTC|ISO)$/.test(token)) {
+      if (/^(SQL|JSON|HTTP|HTTPS|CLI|API|UI|ID|URL|PASS|FAIL|WARN|ZERO|VM|OK|UTC|ISO|HTML|YAML)$/.test(token)) {
         return token;
       }
     }
@@ -421,6 +436,9 @@ export function inspectAndCleanVocabulary(input: string): VocabularyAuditStats {
     return '[REDACTED]';
   });
 
+  // Restore exact protected URLs untouched
+  text = text.replace(/__PRESERVED_URL_(\d+)__/g, (_m, idxStr) => savedUrls[Number(idxStr)] ?? '');
+
   // Clean duplicate spaces created by removed filler phrases without collapsing line breaks
   text = text.replace(/[ \t]{2,}/g, ' ').replace(/ +([.,!?;:])/g, '$1').trim();
 
@@ -431,7 +449,40 @@ export function inspectAndCleanVocabulary(input: string): VocabularyAuditStats {
   };
 }
 
+function cleanJsonValuePreservingSchema(val: unknown): unknown {
+  if (typeof val === 'string') {
+    return inspectAndCleanVocabulary(val).cleanedText;
+  }
+  if (Array.isArray(val)) {
+    return val.map((item) => cleanJsonValuePreservingSchema(item));
+  }
+  if (val && typeof val === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(val)) {
+      out[k] = cleanJsonValuePreservingSchema(v);
+    }
+    return out;
+  }
+  return val;
+}
+
 export function simplifyAndRedactText(input: string): string {
+  const trimmed = typeof input === 'string' ? input.trim() : '';
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        !Array.isArray(parsed) &&
+        ('explicit requirements' in parsed || 'response_data' in parsed || '$schema' in parsed)
+      ) {
+        return JSON.stringify(cleanJsonValuePreservingSchema(parsed), null, 2);
+      }
+    } catch {
+      // Fall through to plain text cleaner
+    }
+  }
   return inspectAndCleanVocabulary(input).cleanedText;
 }
 

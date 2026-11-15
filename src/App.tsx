@@ -12,17 +12,18 @@ import {
   SwarmexActivityMetrics,
   WorkflowCompletionStatus,
 } from './types/agent';
-import { DEFAULT_BLANK_INPUTS } from './data/presets';
+import { DEFAULT_BLANK_INPUTS, PRESET_AGENTS } from './data/presets';
 import { simplifyAndRedactText, simplifyAndRedactObject } from './utils/simpleVocabulary';
 import { Header } from './components/Header';
 import { WorkflowStepper } from './components/WorkflowStepper';
-import { BuilderView } from './components/BuilderView';
+import { BuilderView, BuilderSection } from './components/BuilderView';
 import { SideBySideReview } from './components/SideBySideReview';
 import { AuditView } from './components/AuditView';
 import { SimulatorView } from './components/SimulatorView';
 import { SwarmexWorkbenchView } from './components/SwarmexWorkbenchView';
 import { ExportModal } from './components/ExportModal';
 import { VersionHistoryModal } from './components/VersionHistoryModal';
+import { IntroWorkflowModal } from './components/IntroWorkflowModal';
 import { VFXAtmosphere } from './components/VFXAtmosphere';
 import { AuditLogSidebar } from './components/AuditLogSidebar';
 import { AlertCircle } from 'lucide-react';
@@ -81,6 +82,7 @@ function serializeInputsSummary(inputs: AgentConfigurationInputs): string {
 }
 
 const INPUTS_AUTOSAVE_KEY = 'agent_architect_inputs_autosave_v1';
+const INTRO_SEEN_KEY = 'agent_architect_intro_seen_v1';
 const AUTOSAVE_INTERVAL_MS = 5000;
 
 function loadSavedInputs(): AgentConfigurationInputs {
@@ -125,7 +127,7 @@ export default function App() {
   const [pendingProbeText, setPendingProbeText] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('builder');
-  const [optimizationMode, setOptimizationMode] = useState<string>('strict_technical');
+  const [optimizationMode, setOptimizationMode] = useState<string>('technical_json_schema');
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
   const [lastOptimizedDraft, setLastOptimizedDraft] = useState<string | null>(null);
   const [lastAuditReport, setLastAuditReport] = useState<IndependentAuditReport | null>(null);
@@ -173,11 +175,43 @@ export default function App() {
     }
   }, [isDark]);
 
-  // Iteration Snapshots
+  // Iteration Snapshots & Modals
   const [snapshots, setSnapshots] = useState<IterationSnapshot[]>([]);
   const [currentVersion, setCurrentVersion] = useState<number>(1);
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
+  const [isIntroOpen, setIsIntroOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.localStorage.getItem(INTRO_SEEN_KEY) !== '1';
+    } catch {
+      return true;
+    }
+  });
+  const [requestedBuilderSection, setRequestedBuilderSection] = useState<{
+    section: BuilderSection;
+    nonce: number;
+  } | null>(null);
+
+  const handleCloseIntro = (dontShowAgain: boolean) => {
+    setIsIntroOpen(false);
+    try {
+      if (dontShowAgain) {
+        window.localStorage.setItem(INTRO_SEEN_KEY, '1');
+      } else {
+        window.localStorage.removeItem(INTRO_SEEN_KEY);
+      }
+    } catch {
+      // Ignore storage access errors
+    }
+  };
+
+  const handleJumpFromIntro = (tab: WorkspaceTab, section?: BuilderSection) => {
+    setActiveTab(tab);
+    if (tab === 'builder' && section) {
+      setRequestedBuilderSection({ section, nonce: Date.now() });
+    }
+  };
 
   // Auto-save 'inputs' state to localStorage every 5 seconds (plus beforeunload flush)
   useEffect(() => {
@@ -207,7 +241,7 @@ export default function App() {
       name: 'First Simple Draft',
       inputs: inputsRef.current,
       result: null,
-      optimizationMode: 'strict_technical',
+      optimizationMode: 'technical_json_schema',
     };
     setSnapshots([initialSnapshot]);
   }, []);
@@ -405,8 +439,8 @@ export default function App() {
         ? simplifyAndRedactObject(data.subprocessTrace)
         : undefined;
 
-      const isSecurityRefusal = /SAFETY RULE STOPPED|SECURITY VIOLATION|LOOP RULE BROKEN|LOOP & MUTATION INVARIANT VIOLATION|SKIPPED · 0% POWER|RESOURCE ALLOCATION: IGNORED|MATH CHECK FAILED|MATH VERIFICATION FAILED|STOP RULE TRIGGERED|PERSON MUST APPROVE|HUMAN APPROVAL REQUIRED|FORMAT MISMATCH|SYNTAX DISCREPANCY|denied|blocked/i.test(reply);
-      const isAdversarialProbe = /override|ignore all|\/etc\/passwd|drop table|how are you|malformed|deploy|write_sys|auto[-\s]?adjust|retry\s+loop|loop\s+until|writhing|personal\s+(?:statement|story|commentary)|2\s*\+\s*2\s*=\s*5/i.test(messageText);
+      const isSecurityRefusal = /SAFETY RULE STOPPED|SECURITY VIOLATION|LOOP RULE BROKEN|LOOP & MUTATION INVARIANT VIOLATION|SKIPPED · 0% POWER|RESOURCE ALLOCATION: IGNORED|MATH CHECK FAILED|MATH VERIFICATION FAILED|STOP RULE TRIGGERED|PERSON MUST APPROVE|HUMAN APPROVAL REQUIRED|FORMAT MISMATCH|SYNTAX DISCREPANCY|REFUSED|SOURCE_REJECTED|INTENT_MODELING_BLOCKED|VALIDATION_FAILED|LOOP_BLOCKED|SAFETY_BLOCKED|WEB SOURCE RULE BLOCKED|PERSONAL PROFILING|denied|blocked/i.test(reply);
+      const isAdversarialProbe = /override|ignore all|\/etc\/passwd|drop table|how are you|malformed|deploy|write_sys|auto[-\s]?adjust|retry\s+loop|loop\s+until|writhing|build a profile|personal\s+(?:statement|story|commentary|characteristic|opinion|topic)|extrapolate\s+user\s+intent|http:\/\/localhost|example\.invalid|2\s*\+\s*2\s*=\s*5/i.test(messageText);
 
       const probeFailures: string[] = [];
       if (isAdversarialProbe && !isSecurityRefusal && /hope this helps|certainly|happy to/i.test(reply)) {
@@ -631,7 +665,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden bg-neutral-100/70 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors selection:bg-neutral-900 selection:text-white dark:selection:bg-neutral-100 dark:selection:text-neutral-900">
+    <div className="min-h-screen relative overflow-x-hidden bg-transparent text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors selection:bg-neutral-900 selection:text-white dark:selection:bg-neutral-100 dark:selection:text-neutral-900">
       <VFXAtmosphere />
 
       <Header
@@ -640,6 +674,7 @@ export default function App() {
         isOptimizing={isOptimizing}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        onOpenIntro={() => setIsIntroOpen(true)}
         isLogSidebarOpen={isLogSidebarOpen}
         onToggleLogSidebar={() => setIsLogSidebarOpen((prev) => !prev)}
         logCount={activityLogs.length}
@@ -685,6 +720,7 @@ export default function App() {
             onResetToBlank={handleResetToBlank}
             onNavigateToTab={setActiveTab}
             hasOptimizedResult={Boolean(optimizationResult)}
+            requestedSection={requestedBuilderSection}
           />
         )}
 
@@ -719,7 +755,7 @@ export default function App() {
           <SimulatorView
             systemInstruction={
               optimizationResult?.compiledSystemInstruction ||
-              `Goal: ${inputs.roleObjectives.primaryObjective}\nLimits: ${inputs.systemArchitecture.operationalBoundaries}\nSkills: ${inputs.domainExpertise.technicalCapabilities}\nVoice: ${inputs.personaInteraction.toneAndVoice}`
+              `Goal: ${inputs.roleObjectives.primaryObjective}\nLimits: ${inputs.systemArchitecture.operationalBoundaries}\nSkills: ${inputs.domainExpertise.technicalCapabilities}\nVoice: ${inputs.personaInteraction.toneAndVoice}\nShape: ${inputs.personaInteraction.formatSchemas}${optimizationMode === 'technical_json_schema' ? '\nOutput Mode: TechnicalResponsePayload JSON Schema (required keys: "context", "explicit requirements", "response_data")' : ''}`
             }
             agentTitle={optimizationResult?.agentTitle || activePreset?.name || 'Simple Rules'}
             probesExecuted={probesExecuted}
@@ -761,6 +797,16 @@ export default function App() {
         snapshots={snapshots}
         onRestoreSnapshot={handleRestoreSnapshot}
         currentVersion={currentVersion}
+      />
+
+      <IntroWorkflowModal
+        isOpen={isIntroOpen}
+        onClose={handleCloseIntro}
+        onJumpToLocation={handleJumpFromIntro}
+        onLoadStarterPreset={
+          PRESET_AGENTS[0] ? () => handleSelectPreset(PRESET_AGENTS[0]) : undefined
+        }
+        hasExistingInputs={configureReadyCount > 0}
       />
     </div>
   );

@@ -121,18 +121,18 @@ export const AuditLogSidebar: React.FC<AuditLogSidebarProps> = ({
 
       <aside
         aria-label="Activity & Check Log Drawer"
-        className="relative w-full max-w-[440px] h-full border-l border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl shadow-2xl flex flex-col z-10"
+        className="relative w-full max-w-[460px] h-full border-l border-neutral-200/80 dark:border-white/10 bg-white/88 dark:bg-slate-950/88 backdrop-blur-2xl shadow-2xl flex flex-col z-10"
       >
         {/* Drawer Header */}
-        <div className="px-4 py-3.5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <Terminal className="w-4 h-4 text-neutral-700 dark:text-neutral-300 shrink-0" />
+        <div className="px-5 py-4 border-b border-neutral-200/80 dark:border-white/10 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Terminal className="w-5 h-5 text-neutral-800 dark:text-neutral-200 shrink-0" />
             <div className="min-w-0">
-              <h2 className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
-                Activity &amp; Check Log
+              <h2 className="text-sm sm:text-base font-bold text-neutral-950 dark:text-white truncate">
+                Activity Log
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate font-mono tabular-nums">
-                {logs.length} saved {logs.length === 1 ? 'event' : 'events'}
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate font-mono tabular-nums">
+                {logs.length} {logs.length === 1 ? 'event' : 'events'}
               </p>
             </div>
           </div>
